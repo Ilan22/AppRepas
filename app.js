@@ -18,6 +18,9 @@ const meals = document.getElementById("meals");
 const form = document.getElementById("meal-form");
 const previewContainer = document.getElementById("preview");
 
+// Bouton pour effacer le formulaire
+const clearFormBtn = document.getElementById("clear-form-btn");
+
 // Sélecteurs pour les idées
 const ideaTitleInput = document.getElementById("idea-title");
 const ideaDescriptionInput = document.getElementById("idea-description");
@@ -39,6 +42,61 @@ let filterState = {
 let allMeals = []; // Stocker tous les repas pour les trier
 
 // ========================================
+// FONCTION DE FORMATAGE DES DATES
+// ========================================
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  const day = date.getDate();
+  const monthNames = [
+    "jan",
+    "fév",
+    "mar",
+    "avr",
+    "mai",
+    "juin",
+    "juil",
+    "aoû",
+    "sep",
+    "oct",
+    "nov",
+    "déc",
+  ];
+  const month = monthNames[date.getMonth()];
+  const year = date.getFullYear();
+  return `${day} ${month} ${year}`;
+}
+
+// ========================================
+// FONCTION POUR CONVERTIR LES URLS EN LIENS
+// ========================================
+function linkifyText(text) {
+  if (!text) return text;
+
+  // Regex pour détecter les URLs
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const parts = text.split(urlRegex);
+
+  const container = document.createElement("span");
+  parts.forEach((part) => {
+    if (urlRegex.test(part)) {
+      const link = document.createElement("a");
+      link.href = part;
+      link.textContent = part;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.style.color = "var(--primary-color)";
+      link.style.textDecoration = "underline";
+      link.style.cursor = "pointer";
+      container.appendChild(link);
+    } else {
+      container.appendChild(document.createTextNode(part));
+    }
+  });
+
+  return container;
+}
+
+// ========================================
 // FONCTION DE TRI DES REPAS
 // ========================================
 function sortMeals(meals) {
@@ -51,11 +109,11 @@ function sortMeals(meals) {
       return filterState.sortOrder === "asc" ? comp : -comp;
     });
   } else if (filterState.sortBy === "date") {
-    // Trier par date
+    // Trier par date du repas (champ 'date'), pas par created_at
     sorted.sort((a, b) => {
-      const timeA = new Date(a.created_at).getTime();
-      const timeB = new Date(b.created_at).getTime();
-      return filterState.sortOrder === "desc" ? timeB - timeA : timeA - timeB;
+      const timeA = new Date(a.date).getTime();
+      const timeB = new Date(b.date).getTime();
+      return filterState.sortOrder === "asc" ? timeB - timeA : timeA - timeB;
     });
   } else if (filterState.sortBy === "counter") {
     // Trier par compteur
@@ -157,8 +215,35 @@ async function loadIdeas() {
     ideaDiv.innerHTML = content;
 
     const deleteBtn = ideaDiv.querySelector(".idea-delete-btn");
-    deleteBtn.addEventListener("click", () => {
+    deleteBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
       deleteIdea(idea.id);
+    });
+
+    // Rendre l'idée cliquable pour créer un repas pré-rempli
+    ideaDiv.addEventListener("click", () => {
+      // Pré-remplir le formulaire
+      document.getElementById("title").value = idea.title;
+
+      // Date du jour
+      const today = new Date().toISOString().split("T")[0];
+      document.getElementById("date").value = today;
+
+      // Description pré-remplie
+      let description = "";
+      if (idea.description) {
+        description += idea.description + "\n\n";
+      }
+      if (idea.link) {
+        description += idea.link + "\n\n";
+      }
+      if (idea.author) {
+        description += idea.author;
+      }
+      document.getElementById("description").value = description;
+
+      // Naviguer vers la page d'ajout
+      navigateTo("add");
     });
 
     ideasList.appendChild(ideaDiv);
@@ -431,6 +516,19 @@ form.addEventListener("submit", async (e) => {
   navigateTo("meals");
 });
 
+// Événement pour le bouton effacer le formulaire
+if (clearFormBtn) {
+  clearFormBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    form.reset();
+    previewContainer.innerHTML = "";
+    selectedFiles = [];
+    photosInput.value = "";
+    dateInput.value = new Date().toISOString().split("T")[0];
+    updateAddPhotoButtonFormState();
+  });
+}
+
 // ------------------------------
 // SUPPRIMER UN REPAS + SES PHOTOS
 // ------------------------------
@@ -656,13 +754,17 @@ function enableEditMode(mealDiv, mealId, editBtn) {
 
   // Créer les inputs
   const titleInput = createInput("text", titleElement.textContent);
-  const dateInput = createInput("date", dateElement.textContent);
+  const dateInput = createInput(
+    "date",
+    dateElement.dataset.date || dateElement.textContent
+  );
   const descriptionInput = createTextarea(descriptionElement.textContent);
   const ingredientsInput = createInput("text", ingredientsSpan.textContent);
 
   // Stocker les anciennes valeurs
   titleInput.dataset.oldValue = titleElement.textContent;
-  dateInput.dataset.oldValue = dateElement.textContent;
+  dateInput.dataset.oldValue =
+    dateElement.dataset.date || dateElement.textContent;
   descriptionInput.dataset.oldValue = descriptionElement.textContent;
   ingredientsInput.dataset.oldValue = ingredientsSpan.textContent;
 
@@ -703,6 +805,8 @@ function createInput(type, value) {
   input.style.border = "2px solid var(--primary-color)";
   input.style.borderRadius = "var(--radius-md)";
   input.style.fontFamily = "inherit";
+  input.style.background = "var(--bg-card)";
+  input.style.color = "var(--text-primary)";
   return input;
 }
 
@@ -716,6 +820,8 @@ function createTextarea(value) {
   textarea.style.border = "2px solid var(--primary-color)";
   textarea.style.borderRadius = "var(--radius-md)";
   textarea.style.fontFamily = "inherit";
+  textarea.style.background = "var(--bg-card)";
+  textarea.style.color = "var(--text-primary)";
   return textarea;
 }
 
@@ -769,7 +875,8 @@ async function saveEdits(mealDiv, mealId, editBtn) {
 
   const dateElement = document.createElement("small");
   dateElement.className = "meal-detail-date";
-  dateElement.textContent = newValues.date;
+  dateElement.textContent = formatDate(newValues.date);
+  dateElement.dataset.date = newValues.date;
 
   const descriptionElement = document.createElement("p");
   descriptionElement.className = "meal-detail-description";
@@ -788,7 +895,7 @@ async function saveEdits(mealDiv, mealId, editBtn) {
   const previewTitle = mealDiv.querySelector(".meal-preview-title");
   const previewDate = mealDiv.querySelector(".meal-preview-date");
   if (previewTitle) previewTitle.textContent = newValues.title;
-  if (previewDate) previewDate.textContent = newValues.date;
+  if (previewDate) previewDate.textContent = formatDate(newValues.date);
 
   // Transformer le bouton check en edit
   const img2 = editBtn.querySelector("img");
@@ -1006,7 +1113,9 @@ async function renderMeals(mealsToRender) {
 
     // Preview
     mealElement.querySelector(".meal-preview-title").textContent = meal.title;
-    mealElement.querySelector(".meal-preview-date").textContent = meal.date;
+    mealElement.querySelector(".meal-preview-date").textContent = formatDate(
+      meal.date
+    );
     mealElement.querySelector(
       ".meal-preview-counter .counter-value"
     ).textContent = meal.counter || 0;
@@ -1029,12 +1138,19 @@ async function renderMeals(mealsToRender) {
 
     // Detail
     mealElement.querySelector(".meal-detail-title").textContent = meal.title;
-    mealElement.querySelector(".meal-detail-date").textContent = meal.date;
+    const dateElem = mealElement.querySelector(".meal-detail-date");
+    dateElem.textContent = formatDate(meal.date);
+    dateElem.dataset.date = meal.date; // Stocker la vraie date
     mealElement.querySelector(
       ".meal-detail-counter .counter-value"
     ).textContent = meal.counter || 0;
-    mealElement.querySelector(".meal-detail-description").textContent =
-      meal.description || "";
+    const descriptionElem = mealElement.querySelector(
+      ".meal-detail-description"
+    );
+    descriptionElem.innerHTML = "";
+    if (meal.description) {
+      descriptionElem.appendChild(linkifyText(meal.description));
+    }
     mealElement.querySelector(".meal-detail-ingredients span").textContent =
       meal.ingredients || "";
 
@@ -1082,9 +1198,14 @@ async function renderMeals(mealsToRender) {
       detail.classList.remove("hidden");
     });
 
-    closeBtn.addEventListener("click", () => {
+    closeBtn.addEventListener("click", async () => {
       detail.classList.add("hidden");
       preview.classList.remove("hidden");
+      // Si le tri actuel est par compteur, re-trier et re-rendre
+      if (filterState.sortBy === "counter") {
+        const sortedMeals = sortMeals(allMeals);
+        await renderMeals(sortedMeals);
+      }
     });
 
     editBtn.addEventListener("click", () => {
@@ -1121,6 +1242,13 @@ async function renderMeals(mealsToRender) {
       const currentValue = meal.counter || 1;
       mealDiv.querySelector(".meal-detail-counter .counter-value").textContent =
         currentValue;
+      // Mettre à jour aussi la preview
+      const previewCounter = mealDiv.querySelector(
+        ".meal-preview-counter .counter-value"
+      );
+      if (previewCounter) {
+        previewCounter.textContent = currentValue;
+      }
       minusBtn.disabled = currentValue === 1;
     };
 
@@ -1185,8 +1313,8 @@ function updateFilterButtonsUI() {
 }
 
 // Charger les repas et les idées au démarrage
+let ideasLoaded = false;
 loadMeals();
-loadIdeas();
 updateFilterButtonsUI();
 
 // ========================================
@@ -1212,6 +1340,10 @@ if (navAddBtn) {
 
 if (navIdeasBtn) {
   navIdeasBtn.addEventListener("click", () => {
+    if (!ideasLoaded) {
+      loadIdeas();
+      ideasLoaded = true;
+    }
     navigateTo("ideas");
   });
 }

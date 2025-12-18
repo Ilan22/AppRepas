@@ -18,6 +18,14 @@ const meals = document.getElementById("meals");
 const form = document.getElementById("meal-form");
 const previewContainer = document.getElementById("preview");
 
+// Sélecteurs pour les idées
+const ideaTitleInput = document.getElementById("idea-title");
+const ideaDescriptionInput = document.getElementById("idea-description");
+const ideaLinkInput = document.getElementById("idea-link");
+const ideaAuthorInput = document.getElementById("idea-author");
+const ideasList = document.getElementById("ideas-list");
+const ideaForm = document.getElementById("idea-form");
+
 let selectedFiles = []; // Stockage des fichiers sélectionnés
 
 // ========================================
@@ -48,6 +56,15 @@ function sortMeals(meals) {
       const timeA = new Date(a.created_at).getTime();
       const timeB = new Date(b.created_at).getTime();
       return filterState.sortOrder === "desc" ? timeB - timeA : timeA - timeB;
+    });
+  } else if (filterState.sortBy === "counter") {
+    // Trier par compteur
+    sorted.sort((a, b) => {
+      const counterA = a.counter || 0;
+      const counterB = b.counter || 0;
+      return filterState.sortOrder === "asc"
+        ? counterA - counterB
+        : counterB - counterA;
     });
   }
 
@@ -82,6 +99,133 @@ function navigateTo(page) {
 // ------------------------------
 // CRÉER LA TEMPLATE DES REPAS
 // ------------------------------
+// ========================================
+// GESTION DES IDÉES
+// ========================================
+
+// Charger et afficher les idées
+async function loadIdeas() {
+  const { data, error } = await supabaseClient
+    .from("ideas")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  ideasList.innerHTML = "";
+
+  if (data.length === 0) {
+    ideasList.innerHTML =
+      '<div class="idea-empty">Aucune idée pour le moment</div>';
+    return;
+  }
+
+  data.forEach((idea) => {
+    const ideaDiv = document.createElement("div");
+    ideaDiv.className = "idea-item";
+    ideaDiv.setAttribute("data-idea-id", idea.id);
+
+    let content = `<div class="idea-header">
+      <h3 class="idea-title">${idea.title}`;
+
+    if (idea.author) {
+      content += `<span class="idea-author-chip">${idea.author}</span>`;
+    }
+
+    content += `</h3>
+      <button class="idea-delete-btn" type="button" title="Supprimer">✕</button>
+    </div>`;
+
+    if (idea.description) {
+      content += `<p class="idea-description">${idea.description}</p>`;
+    }
+
+    if (idea.link) {
+      try {
+        const domain = new URL(idea.link).hostname
+          .replace(/^www\./, "")
+          .split(".")[0];
+        content += `<a href="${idea.link}" target="_blank" rel="noopener noreferrer" class="idea-link">${domain}</a>`;
+      } catch (e) {
+        content += `<a href="${idea.link}" target="_blank" rel="noopener noreferrer" class="idea-link">Voir le lien</a>`;
+      }
+    }
+
+    ideaDiv.innerHTML = content;
+
+    const deleteBtn = ideaDiv.querySelector(".idea-delete-btn");
+    deleteBtn.addEventListener("click", () => {
+      deleteIdea(idea.id);
+    });
+
+    ideasList.appendChild(ideaDiv);
+  });
+}
+
+// Supprimer une idée
+async function deleteIdea(ideaId) {
+  if (!confirm("Supprimer cette idée ?")) return;
+
+  const { error } = await supabaseClient
+    .from("ideas")
+    .delete()
+    .eq("id", ideaId);
+
+  if (error) {
+    console.error("Erreur suppression idée :", error);
+    alert("Erreur lors de la suppression");
+    return;
+  }
+
+  loadIdeas();
+}
+
+// Ajouter une idée
+async function addIdea(event) {
+  event.preventDefault();
+
+  const title = ideaTitleInput.value.trim();
+  const description = ideaDescriptionInput.value.trim();
+  const link = ideaLinkInput.value.trim();
+  const author = ideaAuthorInput.value.trim();
+
+  if (!title) {
+    alert("Le titre est obligatoire");
+    return;
+  }
+
+  if (!author) {
+    alert("Veuillez choisir un auteur");
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("ideas")
+    .insert([
+      { title, description: description || null, link: link || null, author },
+    ]);
+
+  if (error) {
+    console.error(error);
+    alert("Erreur lors de l'ajout de l'idée");
+    return;
+  }
+
+  // Réinitialiser le formulaire
+  ideaForm.reset();
+
+  // Recharger les idées
+  loadIdeas();
+}
+
+// Event listener pour le formulaire des idées
+if (ideaForm) {
+  ideaForm.addEventListener("submit", addIdea);
+}
+
 function createMealTemplate() {
   const template = document.createElement("template");
   template.id = "meal-template";
@@ -92,6 +236,7 @@ function createMealTemplate() {
           <div class="meal-preview-info">
             <h3 class="meal-preview-title"></h3>
             <small class="meal-preview-date"></small>
+            <div class="meal-preview-counter">Fait <span class="counter-value">0</span>x</div>
           </div>
           <div class="meal-preview-img-container"></div>
         </div>
@@ -102,6 +247,7 @@ function createMealTemplate() {
           <div class="meal-detail-title-section">
             <h3 class="meal-detail-title"></h3>
             <small class="meal-detail-date"></small>
+            <div class="meal-detail-counter">Fait <span class="counter-value">0</span>x</div>
           </div>
           <div class="meal-detail-actions">
             <button class="meal-detail-edit" title="Éditer">
@@ -128,6 +274,15 @@ function createMealTemplate() {
               </button>
             </div>
             <div class="meal-gallery"></div>
+
+            <div class="meal-counter-buttons">
+              <button class="meal-counter-btn meal-counter-minus" title="Moins">
+                <img src="remove.svg" alt="Moins" class="counter-icon" />
+              </button>
+              <button class="meal-counter-btn meal-counter-plus" title="Plus">
+                <img src="add.svg" alt="Plus" class="counter-icon" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -190,16 +345,23 @@ function updateAddPhotoButtonFormState() {
     "+ Ajouter des photos";
 
   // Bouton soumettre désactivé s'il n'y a pas de photos
+  const errorMessage = document.getElementById("photo-error-message");
   if (selectedFiles.length === 0) {
     submitBtn.disabled = true;
     submitBtn.style.opacity = "0.5";
     submitBtn.style.cursor = "not-allowed";
     submitBtn.title = "Veuillez ajouter au moins une photo";
+    if (errorMessage) {
+      errorMessage.classList.add("visible");
+    }
   } else {
     submitBtn.disabled = false;
     submitBtn.style.opacity = "1";
     submitBtn.style.cursor = "pointer";
     submitBtn.title = "Ajouter ce repas";
+    if (errorMessage) {
+      errorMessage.classList.remove("visible");
+    }
   }
 }
 
@@ -762,6 +924,20 @@ function closeModal() {
 }
 
 // ========================================
+// MISE À JOUR DU COMPTEUR EN BDD
+// ========================================
+async function updateCounterInDB(mealId, newCounter) {
+  const { error } = await supabaseClient
+    .from("meals")
+    .update({ counter: newCounter })
+    .eq("id", mealId);
+
+  if (error) {
+    console.error("Erreur lors de la mise à jour du compteur:", error);
+  }
+}
+
+// ========================================
 // FONCTION DE RENDU DES REPAS (sans appel BDD)
 // ========================================
 async function renderMeals(mealsToRender) {
@@ -816,6 +992,7 @@ async function renderMeals(mealsToRender) {
         meals.appendChild(dateTitle);
       }
     }
+    // Pas de groupement si on trie par compteur
 
     const firstImage = photoUrls.length > 0 ? photoUrls[0] : null;
 
@@ -830,6 +1007,9 @@ async function renderMeals(mealsToRender) {
     // Preview
     mealElement.querySelector(".meal-preview-title").textContent = meal.title;
     mealElement.querySelector(".meal-preview-date").textContent = meal.date;
+    mealElement.querySelector(
+      ".meal-preview-counter .counter-value"
+    ).textContent = meal.counter || 0;
 
     const previewImgContainer = mealElement.querySelector(
       ".meal-preview-img-container"
@@ -850,6 +1030,9 @@ async function renderMeals(mealsToRender) {
     // Detail
     mealElement.querySelector(".meal-detail-title").textContent = meal.title;
     mealElement.querySelector(".meal-detail-date").textContent = meal.date;
+    mealElement.querySelector(
+      ".meal-detail-counter .counter-value"
+    ).textContent = meal.counter || 0;
     mealElement.querySelector(".meal-detail-description").textContent =
       meal.description || "";
     mealElement.querySelector(".meal-detail-ingredients span").textContent =
@@ -930,6 +1113,38 @@ async function renderMeals(mealsToRender) {
       input.click();
     });
 
+    // Event listeners pour les boutons du compteur
+    const minusBtn = mealDiv.querySelector(".meal-counter-minus");
+    const plusBtn = mealDiv.querySelector(".meal-counter-plus");
+
+    const updateCounterDisplay = () => {
+      const currentValue = meal.counter || 1;
+      mealDiv.querySelector(".meal-detail-counter .counter-value").textContent =
+        currentValue;
+      minusBtn.disabled = currentValue === 1;
+    };
+
+    if (minusBtn) {
+      minusBtn.addEventListener("click", async () => {
+        if (meal.counter > 1) {
+          meal.counter--;
+          await updateCounterInDB(meal.id, meal.counter);
+          updateCounterDisplay();
+        }
+      });
+    }
+
+    if (plusBtn) {
+      plusBtn.addEventListener("click", async () => {
+        meal.counter = (meal.counter || 1) + 1;
+        await updateCounterInDB(meal.id, meal.counter);
+        updateCounterDisplay();
+      });
+    }
+
+    // Initialiser l'état du bouton moins
+    updateCounterDisplay();
+
     // Vérifier et mettre à jour l'état du bouton ajouter photo
     updateAddPhotoButtonState(mealDiv, photoUrls.length);
   }
@@ -941,26 +1156,37 @@ async function renderMeals(mealsToRender) {
 function updateFilterButtonsUI() {
   const nameBtn = document.getElementById("filter-name-btn");
   const dateBtn = document.getElementById("filter-date-btn");
+  const counterBtn = document.getElementById("filter-counter-btn");
 
   // Réinitialiser tous les boutons
   nameBtn.classList.remove("active");
   dateBtn.classList.remove("active");
+  counterBtn.classList.remove("active");
 
   // Mettre à jour l'icône et la classe active selon le filtre
+  // Réinitialiser toutes les icônes
+  nameBtn.querySelector(".filter-icon").textContent = "↑↓";
+  dateBtn.querySelector(".filter-icon").textContent = "↑↓";
+  counterBtn.querySelector(".filter-icon").textContent = "↑↓";
+
   if (filterState.sortBy === "name") {
     nameBtn.classList.add("active");
     const icon = nameBtn.querySelector(".filter-icon");
-    icon.textContent = filterState.sortOrder === "asc" ? "A → Z" : "Z → A";
-  } else {
+    icon.textContent = filterState.sortOrder === "asc" ? "↑" : "↓";
+  } else if (filterState.sortBy === "date") {
     dateBtn.classList.add("active");
     const icon = dateBtn.querySelector(".filter-icon");
-    icon.textContent =
-      filterState.sortOrder === "desc" ? "↓ Récent" : "↑ Ancien";
+    icon.textContent = filterState.sortOrder === "asc" ? "↑" : "↓";
+  } else if (filterState.sortBy === "counter") {
+    counterBtn.classList.add("active");
+    const icon = counterBtn.querySelector(".filter-icon");
+    icon.textContent = filterState.sortOrder === "asc" ? "↑" : "↓";
   }
 }
 
-// Charger les repas au démarrage
+// Charger les repas et les idées au démarrage
 loadMeals();
+loadIdeas();
 updateFilterButtonsUI();
 
 // ========================================
@@ -996,6 +1222,7 @@ if (navIdeasBtn) {
 
 const filterNameBtn = document.getElementById("filter-name-btn");
 const filterDateBtn = document.getElementById("filter-date-btn");
+const filterCounterBtn = document.getElementById("filter-counter-btn");
 
 if (filterNameBtn) {
   filterNameBtn.addEventListener("click", async () => {
@@ -1022,6 +1249,23 @@ if (filterDateBtn) {
     } else {
       // Changer vers tri par date, ordre ancien en premier
       filterState.sortBy = "date";
+      filterState.sortOrder = "asc";
+    }
+    // Trier et réafficher les repas sans appel BDD
+    const sortedMeals = sortMeals(allMeals);
+    await renderMeals(sortedMeals);
+    updateFilterButtonsUI();
+  });
+}
+
+if (filterCounterBtn) {
+  filterCounterBtn.addEventListener("click", async () => {
+    if (filterState.sortBy === "counter") {
+      // Basculer l'ordre
+      filterState.sortOrder = filterState.sortOrder === "asc" ? "desc" : "asc";
+    } else {
+      // Changer vers tri par compteur, ordre croissant par défaut
+      filterState.sortBy = "counter";
       filterState.sortOrder = "asc";
     }
     // Trier et réafficher les repas sans appel BDD

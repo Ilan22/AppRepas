@@ -29,6 +29,12 @@
                         <span class="filter-icon">↓</span>
                     </button>
                 </div>
+                <div class="filter-group">
+                    <button class="filter-btn" id="filter-counter-btn" data-filter="counter">
+                        <span class="filter-label">Compteur</span>
+                        <span class="filter-icon">↑↓</span>
+                    </button>
+                </div>
             </div>
 
             <div id="meals" class="meals-list"></div>
@@ -66,14 +72,43 @@
                 </div>
 
                 <button type="submit" class="btn btn-primary">Ajouter ce repas</button>
+                <div id="photo-error-message" class="photo-error-message">
+                    Au moins une photo requise
+                </div>
             </form>
         </div>
 
         <!-- PAGE IDÉES -->
         <div id="page-ideas" class="page">
-            <div class="empty-state">
-                <p>Aucune idée pour le moment</p>
-            </div>
+            <form id="idea-form" class="form-card">
+                <h2 class="form-title">Ajouter une idée</h2>
+
+                <div class="form-group">
+                    <input id="idea-title" class="input-field" placeholder="Titre de l'idée" required />
+                </div>
+
+                <div class="form-group">
+                    <textarea id="idea-description" class="input-field textarea-field"
+                        placeholder="Description (facultatif)" rows="2"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <input id="idea-link" class="input-field" type="url"
+                        placeholder="Lien (TikTok, etc.) (facultatif)" />
+                </div>
+
+                <div class="form-group">
+                    <select id="idea-author" class="input-field" required>
+                        <option value="" disabled selected>Choisir un auteur</option>
+                        <option value="Ilan">Ilan</option>
+                        <option value="Emma">Emma</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Ajouter cette idée</button>
+            </form>
+
+            <div id="ideas-list" class="ideas-list"></div>
         </div>
     </div>
 

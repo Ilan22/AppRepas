@@ -100,6 +100,14 @@ body {
   font-size: 0.95rem;
 }
 
+.field-optional {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+  font-style: italic;
+}
+
 /* ========================================
    FILE INPUT
    ======================================== */
@@ -210,6 +218,23 @@ button {
 }
 
 /* ========================================
+   PHOTO ERROR MESSAGE
+   ======================================== */
+.photo-error-message {
+  font-size: 0.85rem;
+  color: var(--danger-color);
+  text-align: center;
+  margin-top: 0.75rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.photo-error-message.visible {
+  opacity: 1;
+}
+
+/* ========================================
    MEALS LIST
    ======================================== */
 .meals-list {
@@ -269,6 +294,17 @@ button {
 .meal-preview-date {
   color: var(--text-secondary);
   font-size: 1rem;
+}
+
+.meal-preview-counter {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+}
+
+.meal-preview-counter .counter-value {
+  font-weight: 600;
+  color: var(--primary-color);
 }
 
 .meal-preview-img-container {
@@ -346,6 +382,18 @@ button {
   display: block;
 }
 
+.meal-detail-counter {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.meal-detail-counter .counter-value {
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
 .meal-detail-content {
   cursor: default;
   width: 100%;
@@ -410,6 +458,48 @@ button {
   grid-template-columns: repeat(3, 1fr);
   gap: 0.75rem;
   width: 100%;
+}
+
+/* ========================================
+   MEAL COUNTER BUTTONS
+   ======================================== */
+.meal-counter-buttons {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+  margin-top: 1.5rem;
+}
+
+.meal-counter-btn {
+  flex: 1;
+  padding: 0.75rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.meal-counter-btn:hover:not(:disabled) {
+  background: var(--bg-color);
+  border-color: var(--primary-color);
+  transform: scale(1.05);
+}
+
+.meal-counter-btn:disabled {
+  background: var(--bg-color);
+  border-color: var(--border-color);
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.counter-icon {
+  width: 20px;
+  height: 20px;
+  filter: brightness(0) invert(1);
 }
 
 .gallery-thumb-container {
@@ -829,8 +919,103 @@ button {
 }
 
 /* ========================================
-   FILTERS SECTION
+   IDEAS LIST
    ======================================== */
+.ideas-list {
+  margin-bottom: 2rem;
+}
+
+.idea-item {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow-md);
+  transition: var(--transition);
+  position: relative;
+}
+
+.idea-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.idea-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.idea-delete-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.idea-delete-btn:hover {
+  color: #FF5722;
+  transform: scale(1.2);
+}
+
+.idea-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  flex: 1;
+}
+
+.idea-author-chip {
+  display: inline-block;
+  background: var(--primary-color);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.3rem 0.8rem;
+  border-radius: 1rem;
+  margin-left: 0.5rem;
+  text-transform: capitalize;
+}
+
+.idea-description {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
+}
+
+.idea-link {
+  display: inline-block;
+  color: var(--primary-color);
+  text-decoration: none;
+  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--primary-color);
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+}
+
+.idea-link:hover {
+  background: var(--primary-color);
+  color: white;
+}
+
+.idea-empty {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-secondary);
+}
 .filters-section {
   display: flex;
   gap: 0.75rem;

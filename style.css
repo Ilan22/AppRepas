@@ -1,0 +1,23 @@
+body {
+  font-family: sans-serif;
+  max-width: 480px;
+  margin: auto;
+  padding: 1rem;
+}
+
+form input, form button {
+  width: 100%;
+  margin-bottom: 0.5rem;
+  padding: 0.5rem;
+}
+
+.meal {
+  border: 1px solid #ddd;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+}
+
+.meal img {
+  width: 100%;
+  border-radius: 8px;
+}

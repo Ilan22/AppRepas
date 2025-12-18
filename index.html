@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mes repas</title>
+
+    <link rel="manifest" href="manifest.json" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+    <h1>🍽️ Mes repas</h1>
+
+    <form id="meal-form">
+        <input type="text" id="name" placeholder="Nom du repas" required />
+        <input type="date" id="date" required />
+        <input type="file" id="photo" accept="image/*" capture="environment" />
+        <button type="submit">Ajouter</button>
+    </form>
+
+    <hr />
+
+    <div id="meals"></div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

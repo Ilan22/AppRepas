@@ -990,7 +990,13 @@ function openModal(imageUrl, allImageUrls = []) {
     modal.innerHTML = `
       <div class="modal-content">
         <button class="modal-close" onclick="closeModal()"><img src="close.svg" alt="Fermer" class="modal-close-icon" /></button>
-        <img id="modal-image" src="" alt="Agrandissement" />
+        <div class="modal-image-container">
+          <img id="modal-image" src="" alt="Agrandissement" />
+          <button class="modal-save-btn" onclick="saveImage()" title="Sauvegarder la photo">
+            <img src="download.svg" alt="Sauvegarder" />
+            <span>Sauvegarder</span>
+          </button>
+        </div>
       </div>
       <div class="modal-carousel">
         <button class="carousel-btn carousel-prev" onclick="carouselPrev()">❮</button>
@@ -1096,6 +1102,48 @@ function carouselNext() {
   if (carouselState.currentIndex < carouselState.allImageUrls.length - 1) {
     carouselState.currentIndex++;
     updateCarousel();
+  }
+}
+
+// ========================================
+// FONCTION POUR SAUVEGARDER UNE IMAGE
+// ========================================
+function saveImage() {
+  const imageUrl = carouselState.allImageUrls[carouselState.currentIndex];
+  if (!imageUrl) return;
+
+  // Extraire le nom du fichier ou générer un nom
+  const urlParts = imageUrl.split("/");
+  const filename =
+    urlParts[urlParts.length - 1].split("?")[0] || `photo_${Date.now()}.jpg`;
+
+  // Vérifier si c'est une URL blob ou une URL Supabase
+  if (imageUrl.startsWith("blob:")) {
+    // Pour les blob URLs locales
+    const link = document.createElement("a");
+    link.href = imageUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } else {
+    // Pour les URLs Supabase ou externes - utiliser fetch pour contourner les restrictions CORS
+    fetch(imageUrl)
+      .then((response) => response.blob())
+      .then((blob) => {
+        const blobUrl = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = blobUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(blobUrl);
+      })
+      .catch((error) => {
+        console.error("Erreur lors du téléchargement:", error);
+        alert("Erreur lors de la sauvegarde de la photo");
+      });
   }
 }
 

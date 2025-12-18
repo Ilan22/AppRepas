@@ -1,13 +1,30 @@
-const supabaseUrl = "https://vhqftjhtkizimktutsbc.supabase.co";
+// ------------------------------
+// CONFIGURATION SUPABASE
+// ------------------------------
+const supabaseUrl = "https://vhqftjhtkizimktutsbc.supabase.co"; // Remplace par ton URL
 const supabaseKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZocWZ0amh0a2l6aW1rdHV0c2JjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwNTU2NDUsImV4cCI6MjA4MTYzMTY0NX0.Qh8aFMKcP0RgI2P864_51ZVdVZBlDVTwYfPYrKnPz0U";
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZocWZ0amh0a2l6aW1rdHV0c2JjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwNTU2NDUsImV4cCI6MjA4MTYzMTY0NX0.Qh8aFMKcP0RgI2P864_51ZVdVZBlDVTwYfPYrKnPz0U"; // Remplace par ta clé publique
+const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-document.getElementById("date").value = new Date().toISOString().split("T")[0];
-
+// ------------------------------
+// SELECTEURS DOM
+// ------------------------------
+const titleInput = document.getElementById("title");
+const dateInput = document.getElementById("date");
+const descriptionInput = document.getElementById("description");
+const ingredientsInput = document.getElementById("ingredients");
+const photosInput = document.getElementById("photos");
+const meals = document.getElementById("meals");
 const form = document.getElementById("meal-form");
 
+// ------------------------------
+// DATE PAR DÉFAUT = AUJOURD’HUI
+// ------------------------------
+dateInput.value = new Date().toISOString().split("T")[0];
+
+// ------------------------------
+// AJOUTER UN REPAS
+// ------------------------------
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -17,37 +34,59 @@ form.addEventListener("submit", async (e) => {
   const ingredients = ingredientsInput.value;
   const files = photosInput.files;
 
-  const { data: meal, error } = await supabase
+  // 1️⃣ Ajouter le repas dans Supabase
+  const { data: meal, error } = await supabaseClient
     .from("meals")
     .insert([{ title, date, description, ingredients }])
     .select()
     .single();
 
   if (error) {
-    alert("Erreur");
+    alert("Erreur lors de l'ajout du repas");
+    console.error(error);
     return;
   }
 
+  // 2️⃣ Upload des photos
   for (const file of files) {
     const path = `${meal.id}/${crypto.randomUUID()}.jpg`;
 
-    await supabase.storage.from("meal-photos").upload(path, file);
+    const { error: uploadError } = await supabaseClient.storage
+      .from("meal-photos")
+      .upload(path, file);
+
+    if (uploadError) {
+      console.error("Erreur upload photo :", uploadError);
+    }
   }
 
+  // 3️⃣ Reset form et recharger la liste
   form.reset();
+  dateInput.value = new Date().toISOString().split("T")[0];
   loadMeals();
 });
 
+// ------------------------------
+// CHARGER ET AFFICHER LES REPAS
+// ------------------------------
 async function loadMeals() {
-  const { data } = await supabase
+  const { data, error } = await supabaseClient
     .from("meals")
     .select("*")
     .order("date", { ascending: false });
 
+  if (error) {
+    console.error(error);
+    return;
+  }
+
   meals.innerHTML = "";
 
   for (const meal of data) {
-    const { data: photos } = supabase.storage.from("meal-photos").list(meal.id);
+    // Liste des photos
+    const { data: photos } = await supabaseClient.storage
+      .from("meal-photos")
+      .list(meal.id);
 
     const div = document.createElement("div");
     div.className = "meal";
@@ -59,13 +98,13 @@ async function loadMeals() {
       <p><b>Ingrédients :</b> ${meal.ingredients || ""}</p>
     `;
 
-    if (photos) {
+    if (photos && photos.length > 0) {
       for (const photo of photos) {
-        const { data } = supabase.storage
+        const { data: publicUrlData } = supabaseClient.storage
           .from("meal-photos")
           .getPublicUrl(`${meal.id}/${photo.name}`);
 
-        div.innerHTML += `<img src="${data.publicUrl}">`;
+        div.innerHTML += `<img src="${publicUrlData.publicUrl}" />`;
       }
     }
 
@@ -73,4 +112,5 @@ async function loadMeals() {
   }
 }
 
+// Charger les repas au démarrage
 loadMeals();

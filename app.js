@@ -177,7 +177,7 @@ async function refreshMealGallery(mealId) {
     .from("meal-photos")
     .list(mealIdStr);
 
-  const photoUrls = [];
+  const photoData = [];
   if (!photosError && photos && Array.isArray(photos) && photos.length > 0) {
     // Trier les photos par date de création (plus ancienne en premier)
     const sortedPhotos = photos.sort((a, b) => {
@@ -192,7 +192,10 @@ async function refreshMealGallery(mealId) {
         .getPublicUrl(`${mealIdStr}/${photo.name}`);
 
       if (publicUrlData && publicUrlData.publicUrl) {
-        photoUrls.push(publicUrlData.publicUrl);
+        photoData.push({
+          url: publicUrlData.publicUrl,
+          filename: photo.name,
+        });
       }
     }
   }
@@ -202,16 +205,40 @@ async function refreshMealGallery(mealId) {
   if (mealItem) {
     const galleryElement = mealItem.querySelector(".meal-gallery");
     if (galleryElement) {
-      galleryElement.innerHTML = photoUrls
-        .map(
-          (url) => `
-          <img src="${url}" class="gallery-thumb" onclick="openModal('${url.replace(
-            /'/g,
-            "\\'"
-          )}')" />
-        `
-        )
-        .join("");
+      galleryElement.innerHTML = "";
+      photoData.forEach((photo) => {
+        const container = document.createElement("div");
+        container.className = "gallery-thumb-container";
+
+        const img = document.createElement("img");
+        img.src = photo.url;
+        img.className = "gallery-thumb";
+        img.addEventListener("click", () => {
+          openModal(
+            photo.url,
+            photoData.map((p) => p.url)
+          );
+        });
+
+        const removeBtn = document.createElement("button");
+        removeBtn.type = "button";
+        removeBtn.className = "gallery-remove-btn";
+        removeBtn.title = "Supprimer cette photo";
+        removeBtn.dataset.photoFilename = photo.filename;
+        removeBtn.innerHTML =
+          '<img src="remove.svg" alt="Supprimer" class="remove-icon" />';
+        removeBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          removeMealPhotoByFilename(mealId, removeBtn.dataset.photoFilename);
+        });
+
+        container.appendChild(img);
+        container.appendChild(removeBtn);
+        galleryElement.appendChild(container);
+      });
+
+      // Mettre à jour l'état du bouton ajouter photo
+      updateAddPhotoButtonState(mealItem, photoData.length);
     }
   }
 }
@@ -223,7 +250,7 @@ async function loadMeals() {
   const { data, error } = await supabaseClient
     .from("meals")
     .select("*")
-    .order("date", { ascending: false });
+    .order("created_at", { ascending: false });
 
   if (error) {
     console.error(error);
@@ -239,6 +266,7 @@ async function loadMeals() {
       .list(mealIdStr);
 
     const photoUrls = [];
+    const photoFilenames = [];
     if (!photosError && photos && Array.isArray(photos) && photos.length > 0) {
       // Trier les photos par date de création (plus ancienne en premier)
       const sortedPhotos = photos.sort((a, b) => {
@@ -254,6 +282,7 @@ async function loadMeals() {
 
         if (publicUrlData && publicUrlData.publicUrl) {
           photoUrls.push(publicUrlData.publicUrl);
+          photoFilenames.push(photo.name);
         }
       }
     }
@@ -298,12 +327,30 @@ async function loadMeals() {
 
     // Galerie
     const gallery = mealElement.querySelector(".meal-gallery");
-    photoUrls.forEach((url) => {
+    photoUrls.forEach((url, index) => {
+      const container = document.createElement("div");
+      container.className = "gallery-thumb-container";
+
       const img = document.createElement("img");
       img.src = url;
       img.className = "gallery-thumb";
-      img.onclick = () => openModal(url);
-      gallery.appendChild(img);
+      img.onclick = () => openModal(url, photoUrls);
+
+      const removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.className = "gallery-remove-btn";
+      removeBtn.title = "Supprimer cette photo";
+      removeBtn.dataset.photoFilename = photoFilenames[index];
+      removeBtn.innerHTML =
+        '<img src="remove.svg" alt="Supprimer" class="remove-icon" />';
+      removeBtn.onclick = (e) => {
+        e.stopPropagation();
+        removeMealPhotoByFilename(meal.id, removeBtn.dataset.photoFilename);
+      };
+
+      container.appendChild(img);
+      container.appendChild(removeBtn);
+      gallery.appendChild(container);
     });
 
     meals.appendChild(mealElement);
@@ -350,6 +397,25 @@ async function loadMeals() {
 
       input.click();
     });
+
+    // Vérifier et mettre à jour l'état du bouton ajouter photo
+    updateAddPhotoButtonState(mealDiv, photoUrls.length);
+  }
+}
+
+// Mettre à jour l'état du bouton ajouter photo
+function updateAddPhotoButtonState(mealDiv, photoCount) {
+  const addPhotoBtn = mealDiv.querySelector(".meal-add-photo-btn");
+  if (photoCount >= 3) {
+    addPhotoBtn.disabled = true;
+    addPhotoBtn.style.opacity = "0.5";
+    addPhotoBtn.style.cursor = "not-allowed";
+    addPhotoBtn.title = "Nombre maximum de photos atteint (3)";
+  } else {
+    addPhotoBtn.disabled = false;
+    addPhotoBtn.style.opacity = "1";
+    addPhotoBtn.style.cursor = "pointer";
+    addPhotoBtn.title = "Ajouter une photo";
   }
 }
 
@@ -511,6 +577,12 @@ async function saveEdits(mealDiv, mealId, editBtn) {
   descriptionInput.replaceWith(descriptionElement);
   ingredientsInput.replaceWith(ingredientsSpan);
 
+  // Mettre à jour l'aperçu aussi
+  const previewTitle = mealDiv.querySelector(".meal-preview-title");
+  const previewDate = mealDiv.querySelector(".meal-preview-date");
+  if (previewTitle) previewTitle.textContent = newValues.title;
+  if (previewDate) previewDate.textContent = newValues.date;
+
   // Transformer le bouton check en edit
   const img2 = editBtn.querySelector("img");
   img2.src = "edit.svg";
@@ -520,7 +592,76 @@ async function saveEdits(mealDiv, mealId, editBtn) {
   editBtn.classList.remove("checking");
 }
 
-function openModal(imageUrl) {
+// Supprimer une photo du repas par nom de fichier
+async function removeMealPhotoByFilename(mealId, filename) {
+  if (!confirm("Êtes-vous sûr de vouloir supprimer cette photo ?")) {
+    return;
+  }
+
+  try {
+    const mealIdStr = mealId.toString();
+    const path = `${mealIdStr}/${filename}`;
+
+    const { error: deleteError } = await supabaseClient.storage
+      .from("meal-photos")
+      .remove([path]);
+
+    if (deleteError) {
+      console.error("Erreur suppression photo :", deleteError);
+      alert("Erreur lors de la suppression de la photo");
+      return;
+    }
+
+    console.log("Photo supprimée avec succès");
+    refreshMealGallery(mealId);
+  } catch (error) {
+    console.error("Erreur :", error);
+    alert("Erreur lors de la suppression");
+  }
+}
+
+// Supprimer une photo du repas
+async function removeMealPhoto(mealId, photoIndex, allPhotoUrls) {
+  if (!confirm("Êtes-vous sûr de vouloir supprimer cette photo ?")) {
+    return;
+  }
+
+  try {
+    const mealIdStr = mealId.toString();
+
+    // Récupérer la liste des fichiers
+    const { data: photos, error: listError } = await supabaseClient.storage
+      .from("meal-photos")
+      .list(mealIdStr);
+
+    if (listError || !photos || photos.length === 0) {
+      alert("Erreur lors de la récupération des photos");
+      return;
+    }
+
+    // Supprimer le fichier correspondant
+    if (photoIndex >= 0 && photoIndex < photos.length) {
+      const fileToDelete = photos[photoIndex].name;
+      const { error: deleteError } = await supabaseClient.storage
+        .from("meal-photos")
+        .remove([`${mealIdStr}/${fileToDelete}`]);
+
+      if (deleteError) {
+        console.error("Erreur suppression photo :", deleteError);
+        alert("Erreur lors de la suppression de la photo");
+        return;
+      }
+
+      console.log("Photo supprimée avec succès");
+      refreshMealGallery(mealId);
+    }
+  } catch (error) {
+    console.error("Erreur :", error);
+    alert("Erreur lors de la suppression");
+  }
+}
+
+function openModal(imageUrl, allImageUrls = []) {
   // Créer la modal si elle n'existe pas
   let modal = document.getElementById("image-modal");
   if (!modal) {
@@ -532,12 +673,37 @@ function openModal(imageUrl) {
         <button class="modal-close" onclick="closeModal()"><img src="close.svg" alt="Fermer" class="modal-close-icon" /></button>
         <img id="modal-image" src="" alt="Agrandissement" />
       </div>
+      <div class="modal-thumbnails" id="modal-thumbnails"></div>
     `;
     document.body.appendChild(modal);
   }
 
   const modalImage = document.getElementById("modal-image");
+  const thumbnailsContainer = document.getElementById("modal-thumbnails");
+
   modalImage.src = imageUrl;
+
+  // Remplir les miniatures avec les images (max 3)
+  thumbnailsContainer.innerHTML = "";
+  if (allImageUrls.length > 0) {
+    allImageUrls.forEach((url) => {
+      const thumb = document.createElement("img");
+      thumb.src = url;
+      thumb.className = "modal-thumb";
+      if (url === imageUrl) {
+        thumb.classList.add("active");
+      }
+      thumb.addEventListener("click", () => {
+        modalImage.src = url;
+        document.querySelectorAll(".modal-thumb").forEach((img) => {
+          img.classList.remove("active");
+        });
+        thumb.classList.add("active");
+      });
+      thumbnailsContainer.appendChild(thumb);
+    });
+  }
+
   modal.classList.add("active");
   document.body.style.overflow = "hidden";
 }

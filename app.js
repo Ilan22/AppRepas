@@ -446,6 +446,7 @@ async function loadMeals() {
       const input = document.createElement("input");
       input.type = "file";
       input.accept = "image/*";
+      input.multiple = false;
 
       input.addEventListener("change", async (e) => {
         const file = e.target.files[0];
@@ -454,7 +455,13 @@ async function loadMeals() {
         }
       });
 
-      input.click();
+      // Créer un menu de choix
+      const fileInput = input;
+      const source = document.createElement("input");
+      source.type = "hidden";
+      source.value = "file";
+
+      fileInput.click();
     });
 
     // Vérifier et mettre à jour l'état du bouton ajouter photo

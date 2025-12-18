@@ -975,6 +975,11 @@ async function removeMealPhoto(mealId, photoIndex, allPhotoUrls) {
   }
 }
 
+let carouselState = {
+  currentIndex: 0,
+  allImageUrls: [],
+};
+
 function openModal(imageUrl, allImageUrls = []) {
   // Créer la modal si elle n'existe pas
   let modal = document.getElementById("image-modal");
@@ -987,7 +992,11 @@ function openModal(imageUrl, allImageUrls = []) {
         <button class="modal-close" onclick="closeModal()"><img src="close.svg" alt="Fermer" class="modal-close-icon" /></button>
         <img id="modal-image" src="" alt="Agrandissement" />
       </div>
-      <div class="modal-thumbnails" id="modal-thumbnails"></div>
+      <div class="modal-carousel">
+        <button class="carousel-btn carousel-prev" onclick="carouselPrev()">❮</button>
+        <div class="modal-thumbnails" id="modal-thumbnails"></div>
+        <button class="carousel-btn carousel-next" onclick="carouselNext()">❯</button>
+      </div>
     `;
     document.body.appendChild(modal);
   }
@@ -995,31 +1004,99 @@ function openModal(imageUrl, allImageUrls = []) {
   const modalImage = document.getElementById("modal-image");
   const thumbnailsContainer = document.getElementById("modal-thumbnails");
 
+  // Mettre à jour l'état du carousel
+  carouselState.allImageUrls = allImageUrls;
+  carouselState.currentIndex = allImageUrls.indexOf(imageUrl);
+  if (carouselState.currentIndex === -1) {
+    carouselState.currentIndex = 0;
+  }
+
   modalImage.src = imageUrl;
 
-  // Remplir les miniatures avec les images (max 3)
+  // Remplir les miniatures avec les images
   thumbnailsContainer.innerHTML = "";
   if (allImageUrls.length > 0) {
-    allImageUrls.forEach((url) => {
+    allImageUrls.forEach((url, index) => {
       const thumb = document.createElement("img");
       thumb.src = url;
       thumb.className = "modal-thumb";
+      thumb.dataset.index = index;
       if (url === imageUrl) {
         thumb.classList.add("active");
       }
       thumb.addEventListener("click", () => {
-        modalImage.src = url;
-        document.querySelectorAll(".modal-thumb").forEach((img) => {
-          img.classList.remove("active");
-        });
-        thumb.classList.add("active");
+        carouselState.currentIndex = index;
+        updateCarousel();
       });
       thumbnailsContainer.appendChild(thumb);
     });
   }
 
+  updateCarouselButtons();
   modal.classList.add("active");
   document.body.style.overflow = "hidden";
+}
+
+function updateCarousel() {
+  const modalImage = document.getElementById("modal-image");
+  const url = carouselState.allImageUrls[carouselState.currentIndex];
+
+  modalImage.src = url;
+
+  // Mettre à jour les miniatures actives
+  document.querySelectorAll(".modal-thumb").forEach((img) => {
+    img.classList.remove("active");
+  });
+  const activeThumb = document.querySelector(
+    `.modal-thumb[data-index="${carouselState.currentIndex}"]`
+  );
+  if (activeThumb) {
+    activeThumb.classList.add("active");
+    // Scroll le carousel pour centrer l'image active
+    const thumbnailsContainer = document.getElementById("modal-thumbnails");
+    const thumbOffset = activeThumb.offsetLeft - thumbnailsContainer.offsetLeft;
+    const containerWidth = thumbnailsContainer.clientWidth;
+    const thumbWidth = activeThumb.clientWidth;
+    thumbnailsContainer.scrollLeft =
+      thumbOffset - (containerWidth - thumbWidth) / 2;
+  }
+
+  updateCarouselButtons();
+}
+
+function updateCarouselButtons() {
+  const prevBtn = document.querySelector(".carousel-prev");
+  const nextBtn = document.querySelector(".carousel-next");
+
+  if (prevBtn) {
+    prevBtn.style.opacity = carouselState.currentIndex === 0 ? "0.3" : "1";
+    prevBtn.style.cursor =
+      carouselState.currentIndex === 0 ? "not-allowed" : "pointer";
+  }
+  if (nextBtn) {
+    nextBtn.style.opacity =
+      carouselState.currentIndex === carouselState.allImageUrls.length - 1
+        ? "0.3"
+        : "1";
+    nextBtn.style.cursor =
+      carouselState.currentIndex === carouselState.allImageUrls.length - 1
+        ? "not-allowed"
+        : "pointer";
+  }
+}
+
+function carouselPrev() {
+  if (carouselState.currentIndex > 0) {
+    carouselState.currentIndex--;
+    updateCarousel();
+  }
+}
+
+function carouselNext() {
+  if (carouselState.currentIndex < carouselState.allImageUrls.length - 1) {
+    carouselState.currentIndex++;
+    updateCarousel();
+  }
 }
 
 function closeModal() {

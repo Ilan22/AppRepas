@@ -784,7 +784,7 @@ button {
   transition: var(--transition);
 }
 
-.modal-thumbnails {
+.modal-carousel {
   position: fixed;
   bottom: 2rem;
   left: 50%;
@@ -794,6 +794,46 @@ button {
   justify-content: center;
   align-items: center;
   z-index: 1002;
+  max-width: 90vw;
+}
+
+.carousel-btn {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.carousel-btn:hover:not(:disabled) {
+  background: var(--primary-dark);
+  transform: scale(1.1);
+}
+
+.carousel-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.modal-thumbnails {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 0 0.5rem;
+  max-width: 280px;
+  scrollbar-width: none;
+}
+
+.modal-thumbnails::-webkit-scrollbar {
+  display: none;
 }
 
 .modal-thumb {

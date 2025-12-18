@@ -81,6 +81,7 @@ body {
   background: var(--bg-color);
   color: var(--text-primary);
   min-width: 0;
+  box-sizing: border-box;
 }
 
 .input-field:focus {
@@ -811,4 +812,72 @@ button {
 
 .empty-state p {
   font-size: 1.1rem;
+}
+
+/* ========================================
+   MEALS LETTER TITLES
+   ======================================== */
+.meals-letter-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #5A5A5A;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  padding-left: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* ========================================
+   FILTERS SECTION
+   ======================================== */
+.filters-section {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  flex: 1;
+}
+
+.filter-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  width: 100%;
+  background: var(--bg-color);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.filter-btn:hover {
+  border-color: var(--primary-color);
+  color: var(--text-primary);
+}
+
+.filter-btn.active {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.filter-label {
+  font-weight: 500;
+}
+
+.filter-icon {
+  font-size: 0.8rem;
+  opacity: 0.7;
 }

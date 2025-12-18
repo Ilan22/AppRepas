@@ -14,6 +14,23 @@
     <div class="container">
         <!-- PAGE REPAS -->
         <div id="page-meals" class="page active">
+
+            <!-- FILTRES -->
+            <div class="filters-section">
+                <div class="filter-group">
+                    <button class="filter-btn active" id="filter-name-btn" data-filter="name">
+                        <span class="filter-label">Nom</span>
+                        <span class="filter-icon">↑↓</span>
+                    </button>
+                </div>
+                <div class="filter-group">
+                    <button class="filter-btn" id="filter-date-btn" data-filter="date">
+                        <span class="filter-label">Date</span>
+                        <span class="filter-icon">↓</span>
+                    </button>
+                </div>
+            </div>
+
             <div id="meals" class="meals-list"></div>
         </div>
 

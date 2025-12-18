@@ -21,6 +21,40 @@ const previewContainer = document.getElementById("preview");
 let selectedFiles = []; // Stockage des fichiers sélectionnés
 
 // ========================================
+// SYSTÈME DE FILTRES
+// ========================================
+let filterState = {
+  sortBy: "name", // "date" ou "name"
+  sortOrder: "asc", // "asc" ou "desc"
+};
+
+let allMeals = []; // Stocker tous les repas pour les trier
+
+// ========================================
+// FONCTION DE TRI DES REPAS
+// ========================================
+function sortMeals(meals) {
+  const sorted = [...meals]; // Copier le tableau
+
+  if (filterState.sortBy === "name") {
+    // Trier par nom
+    sorted.sort((a, b) => {
+      const comp = a.title.localeCompare(b.title, "fr");
+      return filterState.sortOrder === "asc" ? comp : -comp;
+    });
+  } else if (filterState.sortBy === "date") {
+    // Trier par date
+    sorted.sort((a, b) => {
+      const timeA = new Date(a.created_at).getTime();
+      const timeB = new Date(b.created_at).getTime();
+      return filterState.sortOrder === "desc" ? timeB - timeA : timeA - timeB;
+    });
+  }
+
+  return sorted;
+}
+
+// ========================================
 // SYSTÈME DE PAGES
 // ========================================
 let currentPage = "meals"; // Page par défaut
@@ -369,17 +403,15 @@ async function refreshMealGallery(mealId) {
 // CHARGER ET AFFICHER LES REPAS
 // ------------------------------
 async function loadMeals() {
-  const { data, error } = await supabaseClient
-    .from("meals")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const { data, error } = await supabaseClient.from("meals").select("*");
 
   if (error) {
     console.error(error);
     return;
   }
 
-  meals.innerHTML = "";
+  // Stocker les repas originaux avec les photos
+  allMeals = [];
 
   for (const meal of data) {
     const mealIdStr = meal.id.toString();
@@ -409,122 +441,17 @@ async function loadMeals() {
       }
     }
 
-    const firstImage = photoUrls.length > 0 ? photoUrls[0] : null;
-
-    // Cloner le template
-    const template = document.getElementById("meal-template");
-    const mealElement = template.content.cloneNode(true);
-
-    // Remplir les données
-    const mealItem = mealElement.querySelector(".meal-item");
-    mealItem.setAttribute("data-meal-id", meal.id);
-
-    // Preview
-    mealElement.querySelector(".meal-preview-title").textContent = meal.title;
-    mealElement.querySelector(".meal-preview-date").textContent = meal.date;
-
-    const previewImgContainer = mealElement.querySelector(
-      ".meal-preview-img-container"
-    );
-    if (firstImage) {
-      const img = document.createElement("img");
-      img.src = firstImage;
-      img.alt = "Photo";
-      img.className = "meal-preview-img";
-      previewImgContainer.appendChild(img);
-    } else {
-      const placeholder = document.createElement("div");
-      placeholder.className = "meal-preview-img placeholder";
-      placeholder.textContent = "No image";
-      previewImgContainer.appendChild(placeholder);
-    }
-
-    // Detail
-    mealElement.querySelector(".meal-detail-title").textContent = meal.title;
-    mealElement.querySelector(".meal-detail-date").textContent = meal.date;
-    mealElement.querySelector(".meal-detail-description").textContent =
-      meal.description || "";
-    mealElement.querySelector(".meal-detail-ingredients span").textContent =
-      meal.ingredients || "";
-
-    // Galerie
-    const gallery = mealElement.querySelector(".meal-gallery");
-    photoUrls.forEach((url, index) => {
-      const container = document.createElement("div");
-      container.className = "gallery-thumb-container";
-
-      const img = document.createElement("img");
-      img.src = url;
-      img.className = "gallery-thumb";
-      img.onclick = () => openModal(url, photoUrls);
-
-      const removeBtn = document.createElement("button");
-      removeBtn.type = "button";
-      removeBtn.className = "gallery-remove-btn";
-      removeBtn.title = "Supprimer cette photo";
-      removeBtn.dataset.photoFilename = photoFilenames[index];
-      removeBtn.innerHTML =
-        '<img src="remove.svg" alt="Supprimer" class="remove-icon" />';
-      removeBtn.onclick = (e) => {
-        e.stopPropagation();
-        removeMealPhotoByFilename(meal.id, removeBtn.dataset.photoFilename);
-      };
-
-      container.appendChild(img);
-      container.appendChild(removeBtn);
-      gallery.appendChild(container);
-    });
-
-    meals.appendChild(mealElement);
-
-    // Ajouter les event listeners
-    const mealDiv = meals.querySelector(`[data-meal-id="${meal.id}"]`);
-    const preview = mealDiv.querySelector(".meal-preview");
-    const detail = mealDiv.querySelector(".meal-detail");
-    const closeBtn = mealDiv.querySelector(".meal-detail-close");
-    const editBtn = mealDiv.querySelector(".meal-detail-edit");
-    const deleteBtn = mealDiv.querySelector(".meal-detail-delete");
-    const addPhotoBtn = mealDiv.querySelector(".meal-add-photo-btn");
-
-    preview.addEventListener("click", () => {
-      preview.classList.add("hidden");
-      detail.classList.remove("hidden");
-    });
-
-    closeBtn.addEventListener("click", () => {
-      detail.classList.add("hidden");
-      preview.classList.remove("hidden");
-    });
-
-    editBtn.addEventListener("click", () => {
-      toggleEditMode(mealDiv, meal.id, editBtn);
-    });
-
-    deleteBtn.addEventListener("click", () => {
-      deleteMeal(meal.id);
-    });
-
-    addPhotoBtn.addEventListener("click", () => {
-      const input = document.createElement("input");
-      input.type = "file";
-      input.accept = "image/*";
-      input.multiple = true;
-
-      input.addEventListener("change", async (e) => {
-        const files = Array.from(e.target.files);
-
-        // Uploader toutes les photos sélectionnées
-        for (const file of files) {
-          await uploadMealPhoto(meal.id, file);
-        }
-      });
-
-      input.click();
-    });
-
-    // Vérifier et mettre à jour l'état du bouton ajouter photo
-    updateAddPhotoButtonState(mealDiv, photoUrls.length);
+    // Ajouter les photos aux données du repas
+    meal.photoUrls = photoUrls;
+    meal.photoFilenames = photoFilenames;
+    allMeals.push(meal);
   }
+
+  // Trier les repas selon le filtre actuel
+  const sortedMeals = sortMeals(allMeals);
+
+  // Utiliser renderMeals pour le rendu (avec groupement par lettre si nom)
+  await renderMeals(sortedMeals);
 }
 
 // Mettre à jour l'état du bouton ajouter photo
@@ -834,8 +761,207 @@ function closeModal() {
   document.body.style.overflow = "auto";
 }
 
+// ========================================
+// FONCTION DE RENDU DES REPAS (sans appel BDD)
+// ========================================
+async function renderMeals(mealsToRender) {
+  meals.innerHTML = "";
+
+  // Si aucun repas, afficher le message vide
+  if (mealsToRender.length === 0) {
+    const emptyState = document.createElement("div");
+    emptyState.className = "empty-state";
+    emptyState.innerHTML = "<p>Pas encore de repas</p>";
+    meals.appendChild(emptyState);
+    return;
+  }
+
+  // Grouper par première lettre si le filtre est par nom, par date si par date
+  let groupByLetter = filterState.sortBy === "name";
+  let groupByDate = filterState.sortBy === "date";
+
+  // Déterminer s'il faut afficher les titres de groupement (lettre ou date)
+  let currentGroupKey = null;
+
+  for (const meal of mealsToRender) {
+    const mealIdStr = meal.id.toString();
+    const photoUrls = meal.photoUrls || [];
+    const photoFilenames = meal.photoFilenames || [];
+
+    // Ajouter le titre du groupe (lettre ou date) si le groupe change
+    if (groupByLetter) {
+      const firstLetter = (meal.title.charAt(0) || "").toUpperCase();
+      if (firstLetter !== currentGroupKey) {
+        currentGroupKey = firstLetter;
+        const letterTitle = document.createElement("div");
+        letterTitle.className = "meals-letter-title";
+        letterTitle.textContent = currentGroupKey;
+        meals.appendChild(letterTitle);
+      }
+    } else if (groupByDate) {
+      // Formater la date en "Mois Année" (ex: "Décembre 2025")
+      const dateObj = new Date(meal.date);
+      const monthYear = dateObj.toLocaleDateString("fr-FR", {
+        month: "long",
+        year: "numeric",
+      });
+      const capitalizedMonthYear =
+        monthYear.charAt(0).toUpperCase() + monthYear.slice(1);
+
+      if (capitalizedMonthYear !== currentGroupKey) {
+        currentGroupKey = capitalizedMonthYear;
+        const dateTitle = document.createElement("div");
+        dateTitle.className = "meals-letter-title";
+        dateTitle.textContent = currentGroupKey;
+        meals.appendChild(dateTitle);
+      }
+    }
+
+    const firstImage = photoUrls.length > 0 ? photoUrls[0] : null;
+
+    // Cloner le template
+    const template = document.getElementById("meal-template");
+    const mealElement = template.content.cloneNode(true);
+
+    // Remplir les données
+    const mealItem = mealElement.querySelector(".meal-item");
+    mealItem.setAttribute("data-meal-id", meal.id);
+
+    // Preview
+    mealElement.querySelector(".meal-preview-title").textContent = meal.title;
+    mealElement.querySelector(".meal-preview-date").textContent = meal.date;
+
+    const previewImgContainer = mealElement.querySelector(
+      ".meal-preview-img-container"
+    );
+    if (firstImage) {
+      const img = document.createElement("img");
+      img.src = firstImage;
+      img.alt = "Photo";
+      img.className = "meal-preview-img";
+      previewImgContainer.appendChild(img);
+    } else {
+      const placeholder = document.createElement("div");
+      placeholder.className = "meal-preview-img placeholder";
+      placeholder.textContent = "No image";
+      previewImgContainer.appendChild(placeholder);
+    }
+
+    // Detail
+    mealElement.querySelector(".meal-detail-title").textContent = meal.title;
+    mealElement.querySelector(".meal-detail-date").textContent = meal.date;
+    mealElement.querySelector(".meal-detail-description").textContent =
+      meal.description || "";
+    mealElement.querySelector(".meal-detail-ingredients span").textContent =
+      meal.ingredients || "";
+
+    // Galerie
+    const gallery = mealElement.querySelector(".meal-gallery");
+    photoUrls.forEach((url, index) => {
+      const container = document.createElement("div");
+      container.className = "gallery-thumb-container";
+
+      const img = document.createElement("img");
+      img.src = url;
+      img.className = "gallery-thumb";
+      img.onclick = () => openModal(url, photoUrls);
+
+      const removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.className = "gallery-remove-btn";
+      removeBtn.title = "Supprimer cette photo";
+      removeBtn.dataset.photoFilename = photoFilenames[index];
+      removeBtn.innerHTML =
+        '<img src="remove.svg" alt="Supprimer" class="remove-icon" />';
+      removeBtn.onclick = (e) => {
+        e.stopPropagation();
+        removeMealPhotoByFilename(meal.id, removeBtn.dataset.photoFilename);
+      };
+
+      container.appendChild(img);
+      container.appendChild(removeBtn);
+      gallery.appendChild(container);
+    });
+
+    meals.appendChild(mealElement);
+
+    // Ajouter les event listeners
+    const mealDiv = meals.querySelector(`[data-meal-id="${meal.id}"]`);
+    const preview = mealDiv.querySelector(".meal-preview");
+    const detail = mealDiv.querySelector(".meal-detail");
+    const closeBtn = mealDiv.querySelector(".meal-detail-close");
+    const editBtn = mealDiv.querySelector(".meal-detail-edit");
+    const deleteBtn = mealDiv.querySelector(".meal-detail-delete");
+    const addPhotoBtn = mealDiv.querySelector(".meal-add-photo-btn");
+
+    preview.addEventListener("click", () => {
+      preview.classList.add("hidden");
+      detail.classList.remove("hidden");
+    });
+
+    closeBtn.addEventListener("click", () => {
+      detail.classList.add("hidden");
+      preview.classList.remove("hidden");
+    });
+
+    editBtn.addEventListener("click", () => {
+      toggleEditMode(mealDiv, meal.id, editBtn);
+    });
+
+    deleteBtn.addEventListener("click", () => {
+      deleteMeal(meal.id);
+    });
+
+    addPhotoBtn.addEventListener("click", () => {
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "image/*";
+      input.multiple = true;
+
+      input.addEventListener("change", async (e) => {
+        const files = Array.from(e.target.files);
+
+        // Uploader toutes les photos sélectionnées
+        for (const file of files) {
+          await uploadMealPhoto(meal.id, file);
+        }
+      });
+
+      input.click();
+    });
+
+    // Vérifier et mettre à jour l'état du bouton ajouter photo
+    updateAddPhotoButtonState(mealDiv, photoUrls.length);
+  }
+}
+
+// ========================================
+// MISE À JOUR UI DES BOUTONS DE FILTRE
+// ========================================
+function updateFilterButtonsUI() {
+  const nameBtn = document.getElementById("filter-name-btn");
+  const dateBtn = document.getElementById("filter-date-btn");
+
+  // Réinitialiser tous les boutons
+  nameBtn.classList.remove("active");
+  dateBtn.classList.remove("active");
+
+  // Mettre à jour l'icône et la classe active selon le filtre
+  if (filterState.sortBy === "name") {
+    nameBtn.classList.add("active");
+    const icon = nameBtn.querySelector(".filter-icon");
+    icon.textContent = filterState.sortOrder === "asc" ? "A → Z" : "Z → A";
+  } else {
+    dateBtn.classList.add("active");
+    const icon = dateBtn.querySelector(".filter-icon");
+    icon.textContent =
+      filterState.sortOrder === "desc" ? "↓ Récent" : "↑ Ancien";
+  }
+}
+
 // Charger les repas au démarrage
 loadMeals();
+updateFilterButtonsUI();
 
 // ========================================
 // NAVIGATION EN BAS - BOTTOM NAV
@@ -861,5 +987,46 @@ if (navAddBtn) {
 if (navIdeasBtn) {
   navIdeasBtn.addEventListener("click", () => {
     navigateTo("ideas");
+  });
+}
+
+// ========================================
+// EVENT LISTENERS POUR LES BOUTONS DE FILTRE
+// ========================================
+
+const filterNameBtn = document.getElementById("filter-name-btn");
+const filterDateBtn = document.getElementById("filter-date-btn");
+
+if (filterNameBtn) {
+  filterNameBtn.addEventListener("click", async () => {
+    if (filterState.sortBy === "name") {
+      // Basculer l'ordre
+      filterState.sortOrder = filterState.sortOrder === "asc" ? "desc" : "asc";
+    } else {
+      // Changer vers tri par nom, ordre normal
+      filterState.sortBy = "name";
+      filterState.sortOrder = "asc";
+    }
+    // Trier et réafficher les repas sans appel BDD
+    const sortedMeals = sortMeals(allMeals);
+    await renderMeals(sortedMeals);
+    updateFilterButtonsUI();
+  });
+}
+
+if (filterDateBtn) {
+  filterDateBtn.addEventListener("click", async () => {
+    if (filterState.sortBy === "date") {
+      // Basculer l'ordre
+      filterState.sortOrder = filterState.sortOrder === "desc" ? "asc" : "desc";
+    } else {
+      // Changer vers tri par date, ordre ancien en premier
+      filterState.sortBy = "date";
+      filterState.sortOrder = "asc";
+    }
+    // Trier et réafficher les repas sans appel BDD
+    const sortedMeals = sortMeals(allMeals);
+    await renderMeals(sortedMeals);
+    updateFilterButtonsUI();
   });
 }

@@ -80,6 +80,7 @@ body {
   transition: var(--transition);
   background: var(--bg-color);
   color: var(--text-primary);
+  min-width: 0;
 }
 
 .input-field:focus {
@@ -110,11 +111,6 @@ body {
   cursor: pointer;
   transition: var(--transition);
   background: var(--bg-color);
-}
-
-.file-input-label:hover {
-  border-color: var(--primary-color);
-  background: rgba(255, 107, 53, 0.03);
 }
 
 .file-input-label input[type="file"] {
@@ -150,11 +146,6 @@ body {
   box-shadow: var(--shadow-sm);
 }
 
-.preview-item:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
 .preview-item img {
   position: absolute;
   top: 0;
@@ -185,10 +176,6 @@ body {
   box-shadow: var(--shadow-sm);
 }
 
-.preview-item .remove-btn:hover {
-  background: var(--danger-color);
-}
-
 /* ========================================
    BUTTONS
    ======================================== */
@@ -213,28 +200,12 @@ button {
   box-shadow: var(--shadow-md);
 }
 
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-  background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
-}
-
-.btn-primary:active {
-  transform: translateY(0);
-}
-
 .delete-btn {
   width: auto;
   padding: 0.75rem 1.5rem;
   background: var(--danger-color);
   color: white;
   margin-top: 1rem;
-}
-
-.delete-btn:hover {
-  background: #C41E1E;
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
 }
 
 /* ========================================
@@ -251,10 +222,6 @@ button {
   background: var(--bg-card);
   box-shadow: var(--shadow-md);
   transition: var(--transition);
-}
-
-.meal-item:hover {
-  box-shadow: var(--shadow-lg);
 }
 
 /* ========================================
@@ -275,18 +242,18 @@ button {
   display: none;
 }
 
-.meal-preview-content {
+.meal-preview-header {
   display: flex;
   gap: 1rem;
-  align-items: center;
+  align-items: flex-start;
 }
 
-.meal-preview-text {
+.meal-preview-info {
   flex: 1;
   min-width: 0;
 }
 
-.meal-preview-text h3 {
+.meal-preview-title {
   margin: 0 0 0.25rem 0;
   font-size: 1.1rem;
   font-weight: 600;
@@ -296,9 +263,15 @@ button {
   text-overflow: ellipsis;
 }
 
-.meal-preview-text small {
+.meal-preview-date {
   color: var(--text-secondary);
   font-size: 0.9rem;
+}
+
+.meal-preview-img-container {
+  display: flex;
+  justify-content: flex-end;
+  flex-shrink: 0;
 }
 
 .meal-preview-img {
@@ -306,7 +279,6 @@ button {
   height: 90px;
   object-fit: cover;
   border-radius: var(--radius-md);
-  flex-shrink: 0;
   box-shadow: var(--shadow-sm);
 }
 
@@ -346,61 +318,107 @@ button {
   display: none;
 }
 
-.meal-detail-content {
-  cursor: default;
-  padding-right: 3rem;
+.meal-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
-.meal-detail h3 {
+.meal-detail-title-section {
+  flex: 1;
+}
+
+.meal-detail-title {
+  margin: 0 0 0.5rem 0;
   font-size: 1.3rem;
   font-weight: 600;
-  margin-bottom: 0.5rem;
   color: var(--text-primary);
 }
 
-.meal-detail small {
+.meal-detail-date {
   color: var(--text-secondary);
   font-size: 0.9rem;
   display: block;
-  margin-bottom: 1rem;
 }
 
-.meal-detail p {
+.meal-detail-content {
+  cursor: default;
+  width: 100%;
+}
+
+.meal-detail-content p {
   margin-bottom: 1rem;
   color: var(--text-secondary);
   line-height: 1.6;
 }
 
-.meal-detail p b {
+.meal-detail-content p b {
   color: var(--text-primary);
   font-weight: 600;
 }
 
-/* ========================================
-   MEAL GALLERY
-   ======================================== */
+.meal-photos-section {
+  margin-top: 1.5rem;
+  width: 100%;
+}
+
+.meal-photos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.meal-photos-header h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  flex-grow: 0;
+}
+
+.meal-add-photo-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: var(--primary-color);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.add-icon {
+  width: 20px;
+  height: 20px;
+  filter: brightness(0) invert(1);
+  transition: var(--transition);
+}
+
 .meal-gallery {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 0.75rem;
-  margin: 1.5rem 0;
+  width: 100%;
 }
 
 .gallery-thumb {
   width: 100%;
-  aspect-ratio: 1;
+  height: auto;
+  max-height: 150px;
   object-fit: cover;
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: var(--transition);
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border-color);
-}
-
-.gallery-thumb:hover {
-  transform: scale(1.08);
-  box-shadow: var(--shadow-md);
-  border-color: var(--primary-color);
 }
 
 /* ========================================
@@ -434,20 +452,40 @@ button {
   transition: var(--transition);
 }
 
-.meal-detail-close:hover .close-icon {
-  filter: brightness(1) invert(1);
-}
-
 /* ========================================
    ACTION BUTTONS
    ======================================== */
 .meal-detail-actions {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
   display: flex;
   gap: 0.5rem;
-  z-index: 10;
+  flex-shrink: 0;
+}
+
+.meal-detail-edit {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.meal-detail-edit.checking {
+  background: #10b981;
+  border-color: #10b981;
+}
+
+.edit-icon,
+.check-icon {
+  width: 24px;
+  height: 24px;
+  filter: brightness(0) invert(1);
+  transition: var(--transition);
 }
 
 .meal-detail-delete {
@@ -462,11 +500,6 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.meal-detail-delete:hover {
-  background: #C41E1E;
-  border-color: #C41E1E;
 }
 
 .delete-icon {
@@ -549,10 +582,6 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.modal-close:hover {
-  background: rgba(0, 0, 0, 0.7);
 }
 
 .modal-close-icon {

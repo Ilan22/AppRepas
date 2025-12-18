@@ -45,6 +45,56 @@
         <div id="meals" class="meals-list"></div>
     </div>
 
+    <!-- Template pour un repas -->
+    <template id="meal-template">
+        <div class="meal-item" data-meal-id="">
+            <div class="meal-preview">
+                <div class="meal-preview-header">
+                    <div class="meal-preview-info">
+                        <h3 class="meal-preview-title"></h3>
+                        <small class="meal-preview-date"></small>
+                    </div>
+                    <div class="meal-preview-img-container"></div>
+                </div>
+            </div>
+
+            <div class="meal-detail hidden">
+                <div class="meal-detail-header">
+                    <div class="meal-detail-title-section">
+                        <h3 class="meal-detail-title"></h3>
+                        <small class="meal-detail-date"></small>
+                    </div>
+                    <div class="meal-detail-actions">
+                        <button class="meal-detail-edit" title="Éditer">
+                            <img src="edit.svg" alt="Éditer" class="edit-icon" />
+                        </button>
+                        <button class="meal-detail-delete" title="Supprimer">
+                            <img src="delete.svg" alt="Supprimer" class="delete-icon" />
+                        </button>
+                        <button class="meal-detail-close" title="Fermer">
+                            <img src="arrow.svg" alt="Fermer" class="close-icon" />
+                        </button>
+                    </div>
+                </div>
+
+                <div class="meal-detail-content">
+                    <p class="meal-detail-description"></p>
+                    <p class="meal-detail-ingredients"><b>Ingrédients :</b> <span></span></p>
+
+                    <div class="meal-photos-section">
+                        <div class="meal-photos-header">
+                            <h4>Photos</h4>
+                            <button class="meal-add-photo-btn" title="Ajouter une photo">
+                                <img src="add.svg" alt="Ajouter" class="add-icon" />
+                            </button>
+                        </div>
+                        <div class="meal-gallery"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
     <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="app.js"></script>

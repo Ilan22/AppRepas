@@ -20,6 +20,31 @@ const previewContainer = document.getElementById("preview");
 
 let selectedFiles = []; // Stockage des fichiers sélectionnés
 
+// ========================================
+// SYSTÈME DE PAGES
+// ========================================
+let currentPage = "meals"; // Page par défaut
+
+function navigateTo(page) {
+  // Cacher toutes les pages
+  document.querySelectorAll(".page").forEach((p) => {
+    p.classList.remove("active");
+  });
+
+  // Afficher la page demandée
+  const pageElement = document.getElementById(`page-${page}`);
+  if (pageElement) {
+    pageElement.classList.add("active");
+    currentPage = page;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    // Si on va à la page d'ajout, mettre à jour l'état du bouton
+    if (page === "add") {
+      updateAddPhotoButtonFormState();
+    }
+  }
+}
+
 // ------------------------------
 // CRÉER LA TEMPLATE DES REPAS
 // ------------------------------
@@ -130,11 +155,18 @@ function updateAddPhotoButtonFormState() {
   document.querySelector(".file-input-text").textContent =
     "+ Ajouter des photos";
 
-  // Bouton soumettre toujours actif
-  submitBtn.disabled = false;
-  submitBtn.style.opacity = "1";
-  submitBtn.style.cursor = "pointer";
-  submitBtn.title = "Ajouter ce repas";
+  // Bouton soumettre désactivé s'il n'y a pas de photos
+  if (selectedFiles.length === 0) {
+    submitBtn.disabled = true;
+    submitBtn.style.opacity = "0.5";
+    submitBtn.style.cursor = "not-allowed";
+    submitBtn.title = "Veuillez ajouter au moins une photo";
+  } else {
+    submitBtn.disabled = false;
+    submitBtn.style.opacity = "1";
+    submitBtn.style.cursor = "pointer";
+    submitBtn.title = "Ajouter ce repas";
+  }
 }
 
 function removeFile(index) {
@@ -196,7 +228,11 @@ form.addEventListener("submit", async (e) => {
   previewContainer.innerHTML = "";
   selectedFiles = [];
   dateInput.value = new Date().toISOString().split("T")[0];
+  updateAddPhotoButtonFormState();
   loadMeals();
+
+  // Rediriger vers la page Repas
+  navigateTo("meals");
 });
 
 // ------------------------------
@@ -800,3 +836,30 @@ function closeModal() {
 
 // Charger les repas au démarrage
 loadMeals();
+
+// ========================================
+// NAVIGATION EN BAS - BOTTOM NAV
+// ========================================
+
+// Récupérer les boutons du menu
+const navMealsBtn = document.getElementById("nav-meals");
+const navAddBtn = document.getElementById("nav-add");
+const navIdeasBtn = document.getElementById("nav-ideas");
+
+if (navMealsBtn) {
+  navMealsBtn.addEventListener("click", () => {
+    navigateTo("meals");
+  });
+}
+
+if (navAddBtn) {
+  navAddBtn.addEventListener("click", () => {
+    navigateTo("add");
+  });
+}
+
+if (navIdeasBtn) {
+  navIdeasBtn.addEventListener("click", () => {
+    navigateTo("ideas");
+  });
+}

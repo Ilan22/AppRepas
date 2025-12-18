@@ -698,3 +698,117 @@ button {
     padding-right: 2.5rem;
   }
 }
+
+/* ========================================
+   BOTTOM NAVIGATION
+   ======================================== */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 999;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+  padding: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  gap: 0.25rem;
+}
+
+.nav-btn:hover {
+  color: var(--primary-color);
+}
+
+.nav-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.nav-label {
+  font-weight: 500;
+}
+
+/* Bouton ajouter centré avec bordure ronde */
+.nav-add {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  border: 4px solid white;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+  margin-bottom: 8px;
+  flex-direction: row;
+}
+
+.nav-add:hover {
+  background: var(--primary-dark);
+}
+
+.nav-add .nav-icon-big {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+
+/* Ajuster le padding du conteneur pour la barre en bas */
+.container {
+  padding-bottom: 100px;
+}
+
+/* ========================================
+   PAGES SYSTEM
+   ======================================== */
+.page {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.page.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.page-title {
+  font-size: 1.75rem;
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+  margin-top: 1rem;
+  font-weight: 700;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-secondary);
+}
+
+.empty-state p {
+  font-size: 1.1rem;
+}

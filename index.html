@@ -12,40 +12,70 @@
 
 <body>
     <div class="container">
-        <form id="meal-form" class="form-card">
-            <h2 class="form-title">Ajouter un repas</h2>
+        <!-- PAGE REPAS -->
+        <div id="page-meals" class="page active">
+            <div id="meals" class="meals-list"></div>
+        </div>
 
-            <div class="form-group">
-                <input id="title" class="input-field" placeholder="Titre du repas" required />
+        <!-- PAGE AJOUTER -->
+        <div id="page-add" class="page">
+            <form id="meal-form" class="form-card">
+                <h2 class="form-title">Ajouter un repas</h2>
+
+                <div class="form-group">
+                    <input id="title" class="input-field" placeholder="Titre du repas" required />
+                </div>
+
+                <div class="form-group">
+                    <input id="date" class="input-field" type="date" />
+                </div>
+
+                <div class="form-group">
+                    <textarea id="description" class="input-field textarea-field" placeholder="Description du repas"
+                        rows="2"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <textarea id="ingredients" class="input-field textarea-field" placeholder="Ingrédients"
+                        rows="2"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="file-input-label">
+                        <input id="photos" type="file" accept="image/*" multiple />
+                        <span class="file-input-text">+ Ajouter des photos</span>
+                    </label>
+                    <div id="preview" class="preview-container"></div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Ajouter ce repas</button>
+            </form>
+        </div>
+
+        <!-- PAGE IDÉES -->
+        <div id="page-ideas" class="page">
+            <div class="empty-state">
+                <p>Aucune idée pour le moment</p>
             </div>
-
-            <div class="form-group">
-                <input id="date" class="input-field" type="date" />
-            </div>
-
-            <div class="form-group">
-                <textarea id="description" class="input-field textarea-field" placeholder="Description du repas"
-                    rows="2"></textarea>
-            </div>
-
-            <div class="form-group">
-                <textarea id="ingredients" class="input-field textarea-field" placeholder="Ingrédients"
-                    rows="2"></textarea>
-            </div>
-
-            <div class="form-group">
-                <label class="file-input-label">
-                    <input id="photos" type="file" accept="image/*" multiple />
-                    <span class="file-input-text">+ Ajouter des photos</span>
-                </label>
-                <div id="preview" class="preview-container"></div>
-            </div>
-
-            <button type="submit" class="btn btn-primary">Ajouter ce repas</button>
-        </form>
-
-        <div id="meals" class="meals-list"></div>
+        </div>
     </div>
+
+    <!-- Menu de navigation en bas -->
+    <nav class="bottom-nav">
+        <button class="nav-btn nav-meals" id="nav-meals">
+            <img src="restaurant.svg" alt="Repas" class="nav-icon" />
+            <span class="nav-label">Repas</span>
+        </button>
+
+        <button class="nav-btn nav-add" id="nav-add">
+            <img src="add_big.svg" alt="Ajouter" class="nav-icon-big" />
+        </button>
+
+        <button class="nav-btn nav-ideas" id="nav-ideas">
+            <img src="note.svg" alt="Idée" class="nav-icon" />
+            <span class="nav-label">Idée</span>
+        </button>
+    </nav>
 
     <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

@@ -91,6 +91,7 @@ photosInput.addEventListener("change", (e) => {
   // Ajouter les nouvelles images aux précédentes
   selectedFiles = [...selectedFiles, ...Array.from(e.target.files)];
   updatePreview();
+  updateAddPhotoButtonFormState();
   // Réinitialiser l'input pour pouvoir sélectionner à nouveau
   photosInput.value = "";
 });
@@ -112,9 +113,31 @@ function updatePreview() {
   });
 }
 
+function updateAddPhotoButtonFormState() {
+  const fileInputLabel = document.querySelector(".file-input-label");
+  const photosInput = document.getElementById("photos");
+
+  if (selectedFiles.length >= 3) {
+    fileInputLabel.style.opacity = "0.5";
+    fileInputLabel.style.cursor = "not-allowed";
+    fileInputLabel.style.pointerEvents = "none";
+    photosInput.disabled = true;
+    document.querySelector(".file-input-text").textContent =
+      "Nombre maximum de photos atteint (3)";
+  } else {
+    fileInputLabel.style.opacity = "1";
+    fileInputLabel.style.cursor = "pointer";
+    fileInputLabel.style.pointerEvents = "auto";
+    photosInput.disabled = false;
+    document.querySelector(".file-input-text").textContent =
+      "+ Ajouter des photos";
+  }
+}
+
 function removeFile(index) {
   selectedFiles.splice(index, 1);
   updatePreview();
+  updateAddPhotoButtonFormState();
 }
 // ------------------------------
 // AJOUTER UN REPAS
@@ -446,22 +469,42 @@ async function loadMeals() {
       const input = document.createElement("input");
       input.type = "file";
       input.accept = "image/*";
-      input.multiple = false;
+      input.multiple = true;
 
       input.addEventListener("change", async (e) => {
-        const file = e.target.files[0];
-        if (file) {
-          await uploadMealPhoto(meal.id, file);
+        const files = Array.from(e.target.files);
+
+        // Récupérer le nombre de photos actuelles
+        const galleryElement = mealDiv.querySelector(".meal-gallery");
+        const currentPhotoCount = galleryElement.querySelectorAll(
+          ".gallery-thumb-container"
+        ).length;
+
+        // Calculer combien de photos on peut ajouter
+        const remainingSlots = 3 - currentPhotoCount;
+
+        if (remainingSlots <= 0) {
+          alert("Nombre maximum de photos atteint (3)");
+          return;
+        }
+
+        if (files.length > remainingSlots) {
+          alert(
+            `Vous pouvez ajouter ${remainingSlots} photo(s) au maximum. Vous en avez sélectionné ${files.length}.`
+          );
+          // Uploader seulement les photos qui ne dépassent pas la limite
+          for (let i = 0; i < remainingSlots; i++) {
+            await uploadMealPhoto(meal.id, files[i]);
+          }
+        } else {
+          // Uploader toutes les photos sélectionnées
+          for (const file of files) {
+            await uploadMealPhoto(meal.id, file);
+          }
         }
       });
 
-      // Créer un menu de choix
-      const fileInput = input;
-      const source = document.createElement("input");
-      source.type = "hidden";
-      source.value = "file";
-
-      fileInput.click();
+      input.click();
     });
 
     // Vérifier et mettre à jour l'état du bouton ajouter photo

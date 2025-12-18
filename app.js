@@ -200,7 +200,12 @@ async function loadMeals() {
       </div>
 
       <div class="meal-detail hidden">
-        <button class="meal-detail-close">&times;</button>
+        <div class="meal-detail-actions">
+          <button class="meal-detail-delete" onclick="deleteMeal('${
+            meal.id
+          }')"><img src="delete.svg" alt="Supprimer" class="delete-icon" /></button>
+          <button class="meal-detail-close"><img src="arrow.svg" alt="Fermer" class="close-icon" /></button>
+        </div>
         <div class="meal-detail-content">
           <h3>${meal.title}</h3>
           <small>${meal.date}</small>
@@ -219,10 +224,6 @@ async function loadMeals() {
               )
               .join("")}
           </div>
-
-          <button class="delete-btn" onclick="deleteMeal('${
-            meal.id
-          }')">Supprimer</button>
         </div>
       </div>
     `;
@@ -255,7 +256,7 @@ function openModal(imageUrl) {
     modal.className = "modal";
     modal.innerHTML = `
       <div class="modal-content">
-        <span class="modal-close" onclick="closeModal()">&times;</span>
+        <button class="modal-close" onclick="closeModal()"><img src="close.svg" alt="Fermer" class="modal-close-icon" /></button>
         <img id="modal-image" src="" alt="Agrandissement" />
       </div>
     `;

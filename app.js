@@ -16,12 +16,46 @@ const ingredientsInput = document.getElementById("ingredients");
 const photosInput = document.getElementById("photos");
 const meals = document.getElementById("meals");
 const form = document.getElementById("meal-form");
+const previewContainer = document.getElementById("preview");
+
+let selectedFiles = []; // Stockage des fichiers sélectionnés
 
 // ------------------------------
 // DATE PAR DÉFAUT = AUJOURD’HUI
 // ------------------------------
 dateInput.value = new Date().toISOString().split("T")[0];
+// ------------------------------
+// GESTION DE LA SÉLECTION D'IMAGES
+// ------------------------------
+photosInput.addEventListener("change", (e) => {
+  // Ajouter les nouvelles images aux précédentes
+  selectedFiles = [...selectedFiles, ...Array.from(e.target.files)];
+  updatePreview();
+  // Réinitialiser l'input pour pouvoir sélectionner à nouveau
+  photosInput.value = "";
+});
 
+function updatePreview() {
+  previewContainer.innerHTML = "";
+  selectedFiles.forEach((file, index) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const div = document.createElement("div");
+      div.className = "preview-item";
+      div.innerHTML = `
+        <img src="${e.target.result}" />
+        <button type="button" class="remove-btn" onclick="removeFile(${index})">×</button>
+      `;
+      previewContainer.appendChild(div);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function removeFile(index) {
+  selectedFiles.splice(index, 1);
+  updatePreview();
+}
 // ------------------------------
 // AJOUTER UN REPAS
 // ------------------------------
@@ -47,24 +81,69 @@ form.addEventListener("submit", async (e) => {
     return;
   }
 
-  // 2️⃣ Upload des photos
-  for (const file of files) {
-    const path = `${meal.id}/${crypto.randomUUID()}.jpg`;
+  // 2️⃣ Upload des photos dans le dossier du meal
+  if (selectedFiles.length > 0) {
+    for (const file of selectedFiles) {
+      const folder = meal.id.toString();
+      const fileExtension = file.name.split(".").pop() || "jpg";
+      const filename = crypto.randomUUID() + "." + fileExtension;
+      const path = `${folder}/${filename}`;
 
-    const { error: uploadError } = await supabaseClient.storage
-      .from("meal-photos")
-      .upload(path, file);
+      const { error: uploadError } = await supabaseClient.storage
+        .from("meal-photos")
+        .upload(path, file, {
+          contentType: file.type,
+          upsert: false,
+        });
 
-    if (uploadError) {
-      console.error("Erreur upload photo :", uploadError);
+      if (uploadError) {
+        console.error("Erreur upload photo :", uploadError);
+      } else {
+        console.log("Photo uploadée avec succès :", path);
+      }
     }
+    selectedFiles = [];
   }
 
   // 3️⃣ Reset form et recharger la liste
   form.reset();
+  previewContainer.innerHTML = "";
+  selectedFiles = [];
   dateInput.value = new Date().toISOString().split("T")[0];
   loadMeals();
 });
+
+// ------------------------------
+// SUPPRIMER UN REPAS + SES PHOTOS
+// ------------------------------
+async function deleteMeal(mealId) {
+  if (!confirm("Supprimer ce repas et toutes ses photos ?")) return;
+
+  // 1️⃣ Supprimer les photos dans le bucket
+  const { data: photos } = await supabaseClient.storage
+    .from("meal-photos")
+    .list(mealId);
+
+  if (photos && photos.length > 0) {
+    const pathsToDelete = photos.map((p) => `${mealId}/${p.name}`);
+    const { error: deleteError } = await supabaseClient.storage
+      .from("meal-photos")
+      .remove(pathsToDelete);
+
+    if (deleteError) console.error("Erreur suppression photos :", deleteError);
+  }
+
+  // 2️⃣ Supprimer la ligne dans la table
+  const { error: mealDeleteError } = await supabaseClient
+    .from("meals")
+    .delete()
+    .eq("id", mealId);
+
+  if (mealDeleteError)
+    console.error("Erreur suppression repas :", mealDeleteError);
+
+  loadMeals();
+}
 
 // ------------------------------
 // CHARGER ET AFFICHER LES REPAS
@@ -83,32 +162,115 @@ async function loadMeals() {
   meals.innerHTML = "";
 
   for (const meal of data) {
-    // Liste des photos
-    const { data: photos } = await supabaseClient.storage
+    const mealIdStr = meal.id.toString();
+    const { data: photos, error: photosError } = await supabaseClient.storage
       .from("meal-photos")
-      .list(meal.id);
+      .list(mealIdStr);
 
-    const div = document.createElement("div");
-    div.className = "meal";
-
-    div.innerHTML = `
-      <h3>${meal.title}</h3>
-      <small>${meal.date}</small>
-      <p>${meal.description || ""}</p>
-      <p><b>Ingrédients :</b> ${meal.ingredients || ""}</p>
-    `;
-
-    if (photos && photos.length > 0) {
+    const photoUrls = [];
+    if (!photosError && photos && Array.isArray(photos) && photos.length > 0) {
       for (const photo of photos) {
         const { data: publicUrlData } = supabaseClient.storage
           .from("meal-photos")
-          .getPublicUrl(`${meal.id}/${photo.name}`);
+          .getPublicUrl(`${mealIdStr}/${photo.name}`);
 
-        div.innerHTML += `<img src="${publicUrlData.publicUrl}" />`;
+        if (publicUrlData && publicUrlData.publicUrl) {
+          photoUrls.push(publicUrlData.publicUrl);
+        }
       }
     }
 
+    const firstImage = photoUrls.length > 0 ? photoUrls[0] : null;
+
+    const div = document.createElement("div");
+    div.className = "meal-item";
+    div.innerHTML = `
+      <div class="meal-preview">
+        <div class="meal-preview-content">
+          <div class="meal-preview-text">
+            <h3>${meal.title}</h3>
+            <small>${meal.date}</small>
+          </div>
+          ${
+            firstImage
+              ? `<img src="${firstImage}" alt="Photo" class="meal-preview-img" />`
+              : '<div class="meal-preview-img placeholder">No image</div>'
+          }
+        </div>
+      </div>
+
+      <div class="meal-detail hidden">
+        <button class="meal-detail-close">&times;</button>
+        <div class="meal-detail-content">
+          <h3>${meal.title}</h3>
+          <small>${meal.date}</small>
+          <p>${meal.description || ""}</p>
+          <p><b>Ingrédients :</b> ${meal.ingredients || ""}</p>
+          
+          <div class="meal-gallery">
+            ${photoUrls
+              .map(
+                (url, index) => `
+              <img src="${url}" class="gallery-thumb" onclick="openModal('${url.replace(
+                  /'/g,
+                  "\\'"
+                )}')" />
+            `
+              )
+              .join("")}
+          </div>
+
+          <button class="delete-btn" onclick="deleteMeal('${
+            meal.id
+          }')">Supprimer</button>
+        </div>
+      </div>
+    `;
+
+    // Ajouter les event listeners après la création du DOM
+    const preview = div.querySelector(".meal-preview");
+    const detail = div.querySelector(".meal-detail");
+    const closeBtn = div.querySelector(".meal-detail-close");
+
+    preview.addEventListener("click", () => {
+      preview.classList.add("hidden");
+      detail.classList.remove("hidden");
+    });
+
+    closeBtn.addEventListener("click", () => {
+      detail.classList.add("hidden");
+      preview.classList.remove("hidden");
+    });
+
     meals.appendChild(div);
+  }
+}
+
+function openModal(imageUrl) {
+  // Créer la modal si elle n'existe pas
+  let modal = document.getElementById("image-modal");
+  if (!modal) {
+    modal = document.createElement("div");
+    modal.id = "image-modal";
+    modal.className = "modal";
+    modal.innerHTML = `
+      <div class="modal-content">
+        <span class="modal-close" onclick="closeModal()">&times;</span>
+        <img id="modal-image" src="" alt="Agrandissement" />
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+
+  const modalImage = document.getElementById("modal-image");
+  modalImage.src = imageUrl;
+  modal.classList.add("active");
+}
+
+function closeModal() {
+  const modal = document.getElementById("image-modal");
+  if (modal) {
+    modal.classList.remove("active");
   }
 }
 

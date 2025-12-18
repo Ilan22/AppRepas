@@ -2,12 +2,10 @@
 <html lang="fr">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mes repas</title>
-
-    <link rel="manifest" href="manifest.json" />
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
@@ -15,16 +13,19 @@
     <h1>🍽️ Mes repas</h1>
 
     <form id="meal-form">
-        <input type="text" id="name" placeholder="Nom du repas" required />
-        <input type="date" id="date" required />
-        <input type="file" id="photo" accept="image/*" capture="environment" />
-        <button type="submit">Ajouter</button>
+        <input id="title" placeholder="Titre du repas" required />
+        <input id="date" type="date" />
+        <textarea id="description" placeholder="Description"></textarea>
+        <textarea id="ingredients" placeholder="Ingrédients"></textarea>
+        <input id="photos" type="file" accept="image/*" multiple />
+        <button>Ajouter</button>
     </form>
 
-    <hr />
+    <hr>
 
     <div id="meals"></div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="app.js"></script>
 </body>
 

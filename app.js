@@ -1406,3 +1406,21 @@ if (filterCounterBtn) {
     updateFilterButtonsUI();
   });
 }
+// ========================================
+// EVENT LISTENERS POUR LES BOUTONS DE RAFRAICHISSEMENT
+// ========================================
+
+const refreshMealsBtn = document.getElementById("refresh-meals-btn");
+const refreshIdeasBtn = document.getElementById("refresh-ideas-btn");
+
+if (refreshMealsBtn) {
+  refreshMealsBtn.addEventListener("click", () => {
+    loadMeals();
+  });
+}
+
+if (refreshIdeasBtn) {
+  refreshIdeasBtn.addEventListener("click", () => {
+    loadIdeas();
+  });
+}

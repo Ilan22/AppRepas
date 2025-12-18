@@ -21,6 +21,66 @@ const previewContainer = document.getElementById("preview");
 let selectedFiles = []; // Stockage des fichiers sélectionnés
 
 // ------------------------------
+// CRÉER LA TEMPLATE DES REPAS
+// ------------------------------
+function createMealTemplate() {
+  const template = document.createElement("template");
+  template.id = "meal-template";
+  template.innerHTML = `
+    <div class="meal-item" data-meal-id="">
+      <div class="meal-preview">
+        <div class="meal-preview-header">
+          <div class="meal-preview-info">
+            <h3 class="meal-preview-title"></h3>
+            <small class="meal-preview-date"></small>
+          </div>
+          <div class="meal-preview-img-container"></div>
+        </div>
+      </div>
+
+      <div class="meal-detail hidden">
+        <div class="meal-detail-header">
+          <div class="meal-detail-title-section">
+            <h3 class="meal-detail-title"></h3>
+            <small class="meal-detail-date"></small>
+          </div>
+          <div class="meal-detail-actions">
+            <button class="meal-detail-edit" title="Éditer">
+              <img src="edit.svg" alt="Éditer" class="edit-icon" />
+            </button>
+            <button class="meal-detail-delete" title="Supprimer">
+              <img src="delete.svg" alt="Supprimer" class="delete-icon" />
+            </button>
+            <button class="meal-detail-close" title="Fermer">
+              <img src="arrow.svg" alt="Fermer" class="close-icon" />
+            </button>
+          </div>
+        </div>
+
+        <div class="meal-detail-content">
+          <p class="meal-detail-description"></p>
+          <p class="meal-detail-ingredients"><b>Ingrédients :</b> <span></span></p>
+
+          <div class="meal-photos-section">
+            <div class="meal-photos-header">
+              <h4>Photos</h4>
+              <button class="meal-add-photo-btn" title="Ajouter une photo">
+                <img src="add.svg" alt="Ajouter" class="add-icon" />
+              </button>
+            </div>
+            <div class="meal-gallery"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(template);
+}
+
+// Créer la template au démarrage
+createMealTemplate();
+
+// ------------------------------
 // DATE PAR DÉFAUT = AUJOURD’HUI
 // ------------------------------
 dateInput.value = new Date().toISOString().split("T")[0];
@@ -386,7 +446,6 @@ async function loadMeals() {
       const input = document.createElement("input");
       input.type = "file";
       input.accept = "image/*";
-      input.capture = "environment";
 
       input.addEventListener("change", async (e) => {
         const file = e.target.files[0];

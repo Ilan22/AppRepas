@@ -116,6 +116,7 @@ function updatePreview() {
 function updateAddPhotoButtonFormState() {
   const fileInputLabel = document.querySelector(".file-input-label");
   const photosInput = document.getElementById("photos");
+  const submitBtn = form.querySelector("button[type='submit']");
 
   if (selectedFiles.length >= 3) {
     fileInputLabel.style.opacity = "0.5";
@@ -131,6 +132,19 @@ function updateAddPhotoButtonFormState() {
     photosInput.disabled = false;
     document.querySelector(".file-input-text").textContent =
       "+ Ajouter des photos";
+  }
+
+  // Griser le bouton soumettre si plus de 3 photos
+  if (selectedFiles.length > 3) {
+    submitBtn.disabled = true;
+    submitBtn.style.opacity = "0.5";
+    submitBtn.style.cursor = "not-allowed";
+    submitBtn.title = "Nombre de photos dépasse le maximum (3)";
+  } else {
+    submitBtn.disabled = false;
+    submitBtn.style.opacity = "1";
+    submitBtn.style.cursor = "pointer";
+    submitBtn.title = "Ajouter ce repas";
   }
 }
 

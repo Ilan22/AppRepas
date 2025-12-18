@@ -99,17 +99,21 @@ photosInput.addEventListener("change", (e) => {
 function updatePreview() {
   previewContainer.innerHTML = "";
   selectedFiles.forEach((file, index) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const div = document.createElement("div");
-      div.className = "preview-item";
-      div.innerHTML = `
-        <img src="${e.target.result}" />
-        <button type="button" class="remove-btn" onclick="removeFile(${index})">×</button>
-      `;
-      previewContainer.appendChild(div);
-    };
-    reader.readAsDataURL(file);
+    const div = document.createElement("div");
+    div.className = "preview-item";
+
+    const img = document.createElement("img");
+    img.src = URL.createObjectURL(file);
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "remove-btn";
+    removeBtn.textContent = "×";
+    removeBtn.addEventListener("click", () => removeFile(index));
+
+    div.appendChild(img);
+    div.appendChild(removeBtn);
+    previewContainer.appendChild(div);
   });
 }
 
@@ -118,34 +122,19 @@ function updateAddPhotoButtonFormState() {
   const photosInput = document.getElementById("photos");
   const submitBtn = form.querySelector("button[type='submit']");
 
-  if (selectedFiles.length >= 3) {
-    fileInputLabel.style.opacity = "0.5";
-    fileInputLabel.style.cursor = "not-allowed";
-    fileInputLabel.style.pointerEvents = "none";
-    photosInput.disabled = true;
-    document.querySelector(".file-input-text").textContent =
-      "Nombre maximum de photos atteint (3)";
-  } else {
-    fileInputLabel.style.opacity = "1";
-    fileInputLabel.style.cursor = "pointer";
-    fileInputLabel.style.pointerEvents = "auto";
-    photosInput.disabled = false;
-    document.querySelector(".file-input-text").textContent =
-      "+ Ajouter des photos";
-  }
+  // Toujours actif - pas de limite
+  fileInputLabel.style.opacity = "1";
+  fileInputLabel.style.cursor = "pointer";
+  fileInputLabel.style.pointerEvents = "auto";
+  photosInput.disabled = false;
+  document.querySelector(".file-input-text").textContent =
+    "+ Ajouter des photos";
 
-  // Griser le bouton soumettre si plus de 3 photos
-  if (selectedFiles.length > 3) {
-    submitBtn.disabled = true;
-    submitBtn.style.opacity = "0.5";
-    submitBtn.style.cursor = "not-allowed";
-    submitBtn.title = "Nombre de photos dépasse le maximum (3)";
-  } else {
-    submitBtn.disabled = false;
-    submitBtn.style.opacity = "1";
-    submitBtn.style.cursor = "pointer";
-    submitBtn.title = "Ajouter ce repas";
-  }
+  // Bouton soumettre toujours actif
+  submitBtn.disabled = false;
+  submitBtn.style.opacity = "1";
+  submitBtn.style.cursor = "pointer";
+  submitBtn.title = "Ajouter ce repas";
 }
 
 function removeFile(index) {
@@ -488,33 +477,9 @@ async function loadMeals() {
       input.addEventListener("change", async (e) => {
         const files = Array.from(e.target.files);
 
-        // Récupérer le nombre de photos actuelles
-        const galleryElement = mealDiv.querySelector(".meal-gallery");
-        const currentPhotoCount = galleryElement.querySelectorAll(
-          ".gallery-thumb-container"
-        ).length;
-
-        // Calculer combien de photos on peut ajouter
-        const remainingSlots = 3 - currentPhotoCount;
-
-        if (remainingSlots <= 0) {
-          alert("Nombre maximum de photos atteint (3)");
-          return;
-        }
-
-        if (files.length > remainingSlots) {
-          alert(
-            `Vous pouvez ajouter ${remainingSlots} photo(s) au maximum. Vous en avez sélectionné ${files.length}.`
-          );
-          // Uploader seulement les photos qui ne dépassent pas la limite
-          for (let i = 0; i < remainingSlots; i++) {
-            await uploadMealPhoto(meal.id, files[i]);
-          }
-        } else {
-          // Uploader toutes les photos sélectionnées
-          for (const file of files) {
-            await uploadMealPhoto(meal.id, file);
-          }
+        // Uploader toutes les photos sélectionnées
+        for (const file of files) {
+          await uploadMealPhoto(meal.id, file);
         }
       });
 
@@ -529,17 +494,11 @@ async function loadMeals() {
 // Mettre à jour l'état du bouton ajouter photo
 function updateAddPhotoButtonState(mealDiv, photoCount) {
   const addPhotoBtn = mealDiv.querySelector(".meal-add-photo-btn");
-  if (photoCount >= 3) {
-    addPhotoBtn.disabled = true;
-    addPhotoBtn.style.opacity = "0.5";
-    addPhotoBtn.style.cursor = "not-allowed";
-    addPhotoBtn.title = "Nombre maximum de photos atteint (3)";
-  } else {
-    addPhotoBtn.disabled = false;
-    addPhotoBtn.style.opacity = "1";
-    addPhotoBtn.style.cursor = "pointer";
-    addPhotoBtn.title = "Ajouter une photo";
-  }
+  // Bouton toujours actif - pas de limite
+  addPhotoBtn.disabled = false;
+  addPhotoBtn.style.opacity = "1";
+  addPhotoBtn.style.cursor = "pointer";
+  addPhotoBtn.title = "Ajouter une photo";
 }
 
 // Fonction pour activer/désactiver le mode édition

@@ -203,9 +203,10 @@ async function loadIdeas() {
 
     if (idea.link) {
       try {
-        const domain = new URL(idea.link).hostname
-          .replace(/^www\./, "")
-          .split(".")[0];
+        const hostname = new URL(idea.link).hostname;
+        const parts = hostname.replace(/^www\./, "").split(".");
+        // Récupère le nom principal du domaine (avant le TLD)
+        const domain = parts.length > 1 ? parts[parts.length - 2] : parts[0];
         content += `<a href="${idea.link}" target="_blank" rel="noopener noreferrer" class="idea-link">${domain}</a>`;
       } catch (e) {
         content += `<a href="${idea.link}" target="_blank" rel="noopener noreferrer" class="idea-link">Voir le lien</a>`;

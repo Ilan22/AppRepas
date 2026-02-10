@@ -141,25 +141,14 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition-bounce);
   box-shadow: var(--shadow-sm);
-}
-
-#clear-form-btn:hover {
-  background: var(--primary-color);
-  transform: scale(1.1);
-}
-
-#clear-form-btn:active {
-  transform: scale(0.95);
 }
 
 #clear-form-btn img {
   width: 20px;
   height: 20px;
-  filter: invert(1) brightness(0.7);
-  opacity: 0.6;
-  transition: var(--transition);
+  filter: brightness(0) invert(1);
+  opacity: 1;
 }
 
 #clear-form-btn:hover img {
@@ -178,7 +167,6 @@ body {
   border-radius: var(--radius-md);
   font-size: 1.0625rem;
   font-family: inherit;
-  transition: var(--transition);
   background: var(--bg-color);
   color: var(--text-primary);
   min-width: 0;
@@ -200,7 +188,6 @@ input[type="date"].input-field {
   outline: none;
   background: var(--bg-tertiary);
   box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.25);
-  transform: translateY(-1px);
 }
 
 .input-field::placeholder {
@@ -233,7 +220,6 @@ input[type="date"].input-field {
   border-radius: var(--radius-md);
   text-align: center;
   cursor: pointer;
-  transition: var(--transition);
   background: var(--bg-color);
   box-shadow: var(--shadow-sm);
 }
@@ -241,7 +227,6 @@ input[type="date"].input-field {
 .file-input-label:hover {
   border-color: var(--primary-color);
   background: var(--bg-secondary);
-  transform: scale(1.01);
 }
 
 .file-input-label input[type="file"] {
@@ -279,17 +264,15 @@ input[type="date"].input-field {
   background: var(--bg-color);
   border: none;
   cursor: pointer;
-  transition: var(--transition-bounce);
   box-shadow: var(--shadow-sm);
 }
 
 .preview-item:hover {
-  transform: scale(1.05);
   box-shadow: var(--shadow-md);
 }
 
 .preview-item:active {
-  transform: scale(0.98);
+  box-shadow: var(--shadow-sm);
 }
 
 .preview-item img {
@@ -320,13 +303,11 @@ input[type="date"].input-field {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition-bounce);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   z-index: 10;
 }
 
 .preview-item .remove-btn:hover {
-  transform: scale(1.15);
   background: rgba(255, 59, 48, 1);
 }
 
@@ -338,7 +319,6 @@ button {
   border: none;
   cursor: pointer;
   border-radius: var(--radius-md);
-  transition: var(--transition-bounce);
   font-weight: 600;
   font-size: 1.0625rem;
   letter-spacing: -0.3px;
@@ -361,12 +341,10 @@ button {
   background: linear-gradient(270deg, #0A84FF, #5E5CE6, #BF5AF2, #FF375F, #FF9F0A, #FFD60A, #30D158, #0A84FF);
   background-size: 400% 400%;
   animation: rgbWave 8s ease infinite;
-  transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
 
 .btn-primary:active {
-  transform: scale(0.98);
   box-shadow: var(--shadow-sm);
 }
 
@@ -380,12 +358,11 @@ button {
 }
 
 .delete-btn:hover {
-  transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
 
 .delete-btn:active {
-  transform: scale(0.98);
+  box-shadow: var(--shadow-sm);
 }
 
 /* ========================================
@@ -421,13 +398,11 @@ button {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   box-shadow: var(--shadow-ios);
-  transition: var(--transition);
   border: 1px solid var(--border-color);
 }
 
 .meal-item:hover {
   box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
 }
 
 /* ========================================
@@ -436,7 +411,6 @@ button {
 .meal-preview {
   padding: 1.25rem;
   cursor: pointer;
-  transition: var(--transition);
   border-bottom: 1px solid var(--separator-color);
 }
 
@@ -647,25 +621,22 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition-bounce);
   flex-shrink: 0;
   box-shadow: var(--shadow-sm);
 }
 
 .meal-add-photo-btn:hover {
-  transform: scale(1.1);
   box-shadow: var(--shadow-md);
 }
 
 .meal-add-photo-btn:active {
-  transform: scale(0.95);
+  box-shadow: var(--shadow-sm);
 }
 
 .add-icon {
   width: 20px;
   height: 20px;
   filter: brightness(0) invert(1);
-  transition: var(--transition);
 }
 
 .meal-gallery {
@@ -688,29 +659,30 @@ button {
 .meal-counter-btn {
   flex: 1;
   padding: 0.875rem;
-  background: var(--bg-color);
+  background: linear-gradient(270deg, #0A84FF, #5E5CE6, #BF5AF2, #FF375F, #FF9F0A, #FFD60A, #30D158, #0A84FF);
+  background-size: 400% 400%;
+  animation: rgbWave 8s ease infinite;
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition-bounce);
   box-shadow: var(--shadow-sm);
 }
 
 .meal-counter-btn:hover:not(:disabled) {
-  background: var(--primary-color);
-  transform: scale(1.05);
   box-shadow: var(--shadow-md);
 }
 
 .meal-counter-btn:active:not(:disabled) {
-  transform: scale(0.95);
+  box-shadow: var(--shadow-sm);
 }
 
 .meal-counter-btn:disabled {
-  background: var(--bg-color);
+  background: linear-gradient(270deg, #0A84FF, #5E5CE6, #BF5AF2, #FF375F, #FF9F0A, #FFD60A, #30D158, #0A84FF);
+  background-size: 400% 400%;
+  animation: rgbWave 8s ease infinite;
   cursor: not-allowed;
   opacity: 0.3;
 }
@@ -718,8 +690,8 @@ button {
 .counter-icon {
   width: 22px;
   height: 22px;
-  filter: invert(1) brightness(0.8);
-  opacity: 0.7;
+  filter: brightness(0) invert(1);
+  opacity: 1;
 }
 
 .meal-counter-btn:hover:not(:disabled) .counter-icon {
@@ -735,12 +707,10 @@ button {
   overflow: hidden;
   border: none;
   box-shadow: var(--shadow-sm);
-  transition: var(--transition);
 }
 
 .gallery-thumb-container:hover {
   box-shadow: var(--shadow-md);
-  transform: scale(1.02);
 }
 
 .gallery-thumb {
@@ -751,7 +721,6 @@ button {
   height: 100%;
   object-fit: cover;
   cursor: pointer;
-  transition: var(--transition);
 }
 
 .gallery-remove-btn {
@@ -772,14 +741,12 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition-bounce);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   z-index: 10;
 }
 
 .gallery-remove-btn:hover {
   background: rgba(255, 59, 48, 1);
-  transform: scale(1.15);
 }
 
 .remove-icon {
@@ -801,28 +768,17 @@ button {
   border-radius: 50%;
   cursor: pointer;
   z-index: 10;
-  transition: var(--transition-bounce);
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: var(--shadow-sm);
 }
 
-.meal-detail-close:hover {
-  background: var(--danger-color);
-  transform: scale(1.1);
-}
-
-.meal-detail-close:active {
-  transform: scale(0.95);
-}
-
 .close-icon {
   width: 20px;
   height: 20px;
-  filter: invert(1) brightness(0.7);
-  opacity: 0.6;
-  transition: var(--transition);
+  filter: brightness(0) invert(1);
+  opacity: 1;
 }
 
 .meal-detail-close:hover .close-icon {
@@ -849,7 +805,6 @@ button {
   border: none;
   border-radius: 50%;
   cursor: pointer;
-  transition: var(--transition-bounce);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -857,12 +812,11 @@ button {
 }
 
 .meal-detail-edit:hover {
-  transform: scale(1.1);
   box-shadow: var(--shadow-md);
 }
 
 .meal-detail-edit:active {
-  transform: scale(0.95);
+  box-shadow: var(--shadow-sm);
 }
 
 .meal-detail-edit.checking {
@@ -874,7 +828,6 @@ button {
   width: 20px;
   height: 20px;
   filter: brightness(0) invert(1);
-  transition: var(--transition);
 }
 
 .meal-detail-delete {
@@ -885,7 +838,6 @@ button {
   border: none;
   border-radius: 50%;
   cursor: pointer;
-  transition: var(--transition-bounce);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -893,19 +845,17 @@ button {
 }
 
 .meal-detail-delete:hover {
-  transform: scale(1.1);
   box-shadow: var(--shadow-md);
 }
 
 .meal-detail-delete:active {
-  transform: scale(0.95);
+  box-shadow: var(--shadow-sm);
 }
 
 .delete-icon {
   width: 20px;
   height: 20px;
   filter: brightness(0) invert(1);
-  transition: var(--transition);
 }
 
 /* ========================================
@@ -986,7 +936,6 @@ button {
   border-radius: 50%;
   cursor: pointer;
   z-index: 1001;
-  transition: var(--transition-bounce);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -995,18 +944,16 @@ button {
 
 .modal-close:hover {
   background: rgba(58, 58, 60, 0.85);
-  transform: scale(1.1);
 }
 
 .modal-close:active {
-  transform: scale(0.95);
+  background: rgba(58, 58, 60, 0.85);
 }
 
 .modal-close-icon {
   width: 24px;
   height: 24px;
   filter: brightness(0) invert(1);
-  transition: var(--transition);
 }
 
 .modal-image-container {
@@ -1043,12 +990,10 @@ button {
   background: linear-gradient(270deg, #0A84FF, #5E5CE6, #BF5AF2, #FF375F, #FF9F0A, #FFD60A, #30D158, #0A84FF);
   background-size: 400% 400%;
   animation: rgbWave 8s ease infinite;
-  transform: translateY(-2px) scale(1.05);
   box-shadow: var(--shadow-lg);
 }
 
 .modal-save-btn:active {
-  transform: translateY(0) scale(0.98);
   box-shadow: var(--shadow-sm);
 }
 
@@ -1091,7 +1036,6 @@ button {
   align-items: center;
   justify-content: center;
   font-size: 1.25rem;
-  transition: var(--transition-bounce);
   flex-shrink: 0;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   font-weight: 600;
@@ -1099,12 +1043,11 @@ button {
 
 .carousel-btn:hover:not(:disabled) {
   background: rgba(72, 72, 74, 1);
-  transform: scale(1.12);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
 }
 
 .carousel-btn:active:not(:disabled) {
-  transform: scale(0.95);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .carousel-btn:disabled {
@@ -1133,7 +1076,6 @@ button {
   border-radius: var(--radius-md);
   cursor: pointer;
   opacity: 0.5;
-  transition: var(--transition);
   border: 2px solid transparent;
   flex-shrink: 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -1141,7 +1083,6 @@ button {
 
 .modal-thumb:hover {
   opacity: 0.8;
-  transform: scale(1.05);
 }
 
 .modal-thumb.active {
@@ -1206,7 +1147,6 @@ button {
   background: none;
   border: none;
   cursor: pointer;
-  transition: var(--transition);
   padding: 0.5rem;
   color: var(--text-secondary);
   font-size: 0.625rem;
@@ -1223,11 +1163,16 @@ button {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  transform: scale(1.05);
 }
 
 .nav-btn:active {
-  transform: scale(0.95);
+  color: transparent;
+  background: linear-gradient(270deg, #0A84FF, #5E5CE6, #BF5AF2, #FF375F, #FF9F0A, #FFD60A, #30D158, #0A84FF);
+  background-size: 400% 400%;
+  animation: rgbWave 8s ease infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .nav-icon {
@@ -1235,7 +1180,6 @@ button {
   height: 26px;
   object-fit: contain;
   opacity: 0.7;
-  transition: var(--transition);
   filter: brightness(0) invert(1);
 }
 
@@ -1260,19 +1204,17 @@ button {
   margin-bottom: 20px;
   flex-direction: row;
   box-shadow: 0 4px 20px rgba(10, 132, 255, 0.5);
-  transition: var(--transition-bounce);
 }
 
 .nav-add:hover {
   background: linear-gradient(270deg, #0A84FF, #5E5CE6, #BF5AF2, #FF375F, #FF9F0A, #FFD60A, #30D158, #0A84FF);
   background-size: 400% 400%;
   animation: rgbWave 8s ease infinite;
-  transform: scale(1.08);
   box-shadow: 0 6px 28px rgba(10, 132, 255, 0.65);
 }
 
 .nav-add:active {
-  transform: scale(0.95);
+  box-shadow: 0 4px 20px rgba(10, 132, 255, 0.5);
 }
 
 .nav-add .nav-icon-big {
@@ -1357,13 +1299,11 @@ button {
   padding: 1.75rem;
   margin-bottom: 1rem;
   box-shadow: var(--shadow-ios);
-  transition: var(--transition);
   position: relative;
   border: 1px solid var(--border-color);
 }
 
 .idea-item:hover {
-  transform: translateY(-3px);
   box-shadow: var(--shadow-md);
 }
 
@@ -1386,7 +1326,6 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition-bounce);
   flex-shrink: 0;
   border-radius: 50%;
 }
@@ -1394,11 +1333,10 @@ button {
 .idea-delete-btn:hover {
   color: var(--danger-color);
   background: rgba(255, 69, 58, 0.15);
-  transform: scale(1.15);
 }
 
 .idea-delete-btn:active {
-  transform: scale(0.95);
+  background: rgba(255, 69, 58, 0.15);
 }
 
 .idea-title {
@@ -1455,12 +1393,11 @@ button {
   background-size: 400% 400%;
   animation: rgbWave 8s ease infinite;
   color: white;
-  transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
 
 .idea-link:active {
-  transform: scale(0.98);
+  box-shadow: var(--shadow-sm);
 }
 
 .idea-empty {
@@ -1495,7 +1432,6 @@ button {
   border: none;
   border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: var(--transition-bounce);
   font-size: 0.9375rem;
   font-weight: 600;
   box-shadow: var(--shadow-sm);
@@ -1505,11 +1441,10 @@ button {
 .filter-btn:hover {
   background: var(--bg-color);
   color: var(--text-primary);
-  transform: scale(1.02);
 }
 
 .filter-btn:active {
-  transform: scale(0.98);
+  background: var(--bg-color);
 }
 
 .filter-btn.active {
@@ -1558,12 +1493,10 @@ button {
   background: linear-gradient(270deg, #0A84FF, #5E5CE6, #BF5AF2, #FF375F, #FF9F0A, #FFD60A, #30D158, #0A84FF);
   background-size: 400% 400%;
   animation: rgbWave 8s ease infinite;
-  transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
 
 .refresh-btn:active {
-  transform: scale(0.98);
   box-shadow: var(--shadow-sm);
 }
 
